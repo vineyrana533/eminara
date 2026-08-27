@@ -47,9 +47,8 @@ export default function Hero() {
         <div className="absolute left-1/2 top-0 h-[520px] w-[820px] -translate-x-1/2 rounded-full bg-accent/[0.06] blur-[130px]" />
       </div>
 
-      <div className="container-x grid items-center gap-14 lg:grid-cols-12 lg:gap-10">
-        {/* Left */}
-        <div className="lg:col-span-7">
+      <div className="container-x flex flex-col items-center gap-14 text-center">
+        <div className="flex max-w-4xl flex-col items-center">
           <motion.div
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
@@ -60,7 +59,7 @@ export default function Hero() {
             EmiNara AI · Intelligent systems for modern businesses
           </motion.div>
 
-          <h1 className="text-balance text-[2.7rem] font-medium leading-[1.02] tracking-tight text-cream sm:text-6xl lg:text-7xl xl:text-[5rem]">
+          <h1 className="text-balance text-[2.9rem] font-medium leading-[0.95] tracking-[-0.05em] text-cream sm:text-7xl lg:text-[5.5rem] xl:text-[6.5rem]">
             <Words text="We build AI systems" />
             <br />
             <Words text="that move your" />
@@ -72,7 +71,7 @@ export default function Hero() {
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.8, delay: 0.5, ease: [0.16, 1, 0.3, 1] }}
-            className="mt-7 max-w-xl text-balance text-base leading-relaxed text-cream-dim sm:text-lg"
+            className="mt-7 max-w-xl text-balance text-base leading-relaxed text-cream-dim sm:text-xl"
           >
             From AI employees and intelligent automation to high-converting websites and
             AI-powered advertising — we build the digital systems that help businesses
@@ -83,7 +82,7 @@ export default function Hero() {
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.8, delay: 0.65, ease: [0.16, 1, 0.3, 1] }}
-            className="mt-9 flex flex-col gap-3 sm:flex-row sm:items-center"
+            className="mt-9 flex flex-col items-center gap-3 sm:flex-row sm:justify-center"
           >
             <MagneticButton
               href="#contact"
@@ -110,7 +109,7 @@ export default function Hero() {
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
             transition={{ delay: 0.9, duration: 0.9 }}
-            className="mt-12 flex flex-wrap items-center gap-x-8 gap-y-3 text-xs text-muted"
+            className="mt-12 flex flex-wrap items-center justify-center gap-x-8 gap-y-3 text-xs text-muted"
           >
             {["Startups", "SaaS", "Healthcare", "Real estate", "E-commerce"].map((x) => (
               <span key={x} className="flex items-center gap-2">
@@ -126,7 +125,7 @@ export default function Hero() {
           initial={{ opacity: 0, y: 40, scale: 0.96 }}
           animate={{ opacity: 1, y: 0, scale: 1 }}
           transition={{ duration: 1, delay: 0.35, ease: [0.16, 1, 0.3, 1] }}
-          className="lg:col-span-5"
+          className="w-full max-w-3xl"
         >
           <HeroWorkflow />
         </motion.div>

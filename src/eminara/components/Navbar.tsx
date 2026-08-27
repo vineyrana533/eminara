@@ -48,16 +48,13 @@ export default function Navbar() {
         animate={{ y: 0, opacity: 1 }}
         transition={{ duration: 0.8, ease: [0.16, 1, 0.3, 1] }}
         className={cn(
-          "fixed inset-x-0 top-0 z-50 transition-all duration-500",
-          scrolled
-            ? "border-b border-line-soft bg-ink/75 backdrop-blur-xl"
-            : "border-b border-transparent bg-transparent"
+          "fixed inset-x-0 top-3 z-50 px-4 transition-all duration-500 sm:top-5"
         )}
       >
         <div
           className={cn(
-            "container-x flex items-center justify-between transition-all duration-500",
-            scrolled ? "h-16" : "h-20"
+            "mx-auto flex w-full max-w-6xl items-center justify-between rounded-full px-3 pl-5 transition-all duration-500",
+            scrolled ? "glass-pill h-14" : "h-16 bg-white/45 backdrop-blur-md"
           )}
         >
           <Logo onClick={() => go("#top")} />
