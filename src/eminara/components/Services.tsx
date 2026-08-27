@@ -293,7 +293,7 @@ export default function Services() {
                   transition={{ duration: 0.4, ease: [0.16, 1, 0.3, 1] }}
                   className="h-full min-h-[420px]"
                 >
-                  <ActiveVisual />
+                  {ActiveVisual ? <ActiveVisual /> : null}
                 </motion.div>
               </AnimatePresence>
             </div>
