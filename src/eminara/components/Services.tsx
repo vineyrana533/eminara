@@ -219,6 +219,16 @@ export default function Services() {
     };
   }, []);
 
+  // allow other sections (e.g. footer links) to jump to a specific service
+  useEffect(() => {
+    const onSelect = (e: Event) => {
+      const i = (e as CustomEvent<number>).detail;
+      if (typeof i === "number" && i >= 0 && i < SERVICES.length) select(i);
+    };
+    window.addEventListener("eminara:select-service", onSelect);
+    return () => window.removeEventListener("eminara:select-service", onSelect);
+  }, []);
+
   return (
     <section id="services" className="relative scroll-mt-20 py-24 sm:py-32">
       <div className="container-x">

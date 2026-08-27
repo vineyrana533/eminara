@@ -69,12 +69,13 @@ export default function Footer() {
           <div className="lg:col-span-3">
             <h4 className="mb-4 text-[0.65rem] uppercase tracking-[0.25em] text-faint">Services</h4>
             <ul className="flex flex-col gap-2.5">
-              {SERVICES.map((s) => (
+              {SERVICES.map((s, i) => (
                 <li key={s}>
                   <a
                     href="#services"
                     onClick={(e) => {
                       e.preventDefault();
+                      window.dispatchEvent(new CustomEvent("eminara:select-service", { detail: i }));
                       go("#services");
                     }}
                     className="text-sm text-cream-dim transition-colors hover:text-accent"
