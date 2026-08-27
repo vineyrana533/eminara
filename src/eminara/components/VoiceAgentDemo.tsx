@@ -39,7 +39,7 @@ export default function VoiceAgentDemo() {
     return () => clearTimeout(id);
   }, [stage, playing]);
 
-  const current = STAGES[stage];
+  const current = STAGES[stage]!;
 
   return (
     <section className="relative overflow-hidden py-24 sm:py-32">
