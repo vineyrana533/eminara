@@ -1,6 +1,5 @@
 import { createFileRoute } from "@tanstack/react-router";
 
-import "../eminara/eminara.css";
 import { useLenis } from "../eminara/lib/smooth-scroll";
 import Cursor from "../eminara/components/Cursor";
 import Navbar from "../eminara/components/Navbar";
