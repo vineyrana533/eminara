@@ -118,7 +118,7 @@ function SiteMockup({ p }: { p: Project }) {
 
 export default function Portfolio() {
   const [active, setActive] = useState(0);
-  const p = PROJECTS[active];
+  const p = PROJECTS[active]!;
 
   return (
     <section id="work" className="relative scroll-mt-20 py-24 sm:py-32">
