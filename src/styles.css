@@ -145,24 +145,25 @@
 
 @theme {
   /* Typography */
-  --font-sans: "Inter", ui-sans-serif, system-ui, sans-serif;
-  --font-display: "Space Grotesk", "Inter", ui-sans-serif, system-ui, sans-serif;
+  --font-sans: "Inter Tight", "Inter", ui-sans-serif, system-ui, sans-serif;
+  --font-display: "Inter Tight", "Inter", ui-sans-serif, system-ui, sans-serif;
   --font-serif: "Instrument Serif", ui-serif, Georgia, serif;
 
-  /* Core palette — monochrome ink base with a warm signal accent */
-  --color-ink: #0a0a0b;
-  --color-ink-2: #0e0e10;
-  --color-panel: #131316;
-  --color-panel-2: #17171b;
-  --color-line: #232327;
-  --color-line-soft: #1a1a1e;
-  --color-cream: #f2f0ea;
-  --color-cream-dim: #c9c6bd;
-  --color-muted: #8b887f;
-  --color-faint: #55534c;
-  --color-accent: #c8f04a;
-  --color-accent-dim: #a7cc3a;
-  --color-accent-soft: rgba(200, 240, 74, 0.12);
+  /* Core palette — soft studio light, glossy candy accents */
+  --color-ink: #ececeb;
+  --color-ink-2: #f4f4f3;
+  --color-panel: #ffffff;
+  --color-panel-2: #f7f7f6;
+  --color-line: #dcdcd8;
+  --color-line-soft: #e6e6e2;
+  --color-cream: #0b0b0b;
+  --color-cream-dim: #3b3b39;
+  --color-muted: #6e6e6a;
+  --color-faint: #a6a6a1;
+  --color-accent: #ff2f92;
+  --color-accent-dim: #e01f7c;
+  --color-accent-soft: rgba(255, 47, 146, 0.1);
+  --color-lime: #3ee97a;
 
   /* Motion */
   --ease-out-expo: cubic-bezier(0.16, 1, 0.3, 1);
@@ -177,6 +178,8 @@
 
   body {
     background-color: var(--color-ink);
+    background-image: linear-gradient(180deg, #e4e4e2 0%, #f2f2f1 45%, #ececea 100%);
+    background-attachment: fixed;
     color: var(--color-cream);
     font-family: var(--font-sans);
     overflow-x: hidden;
@@ -184,12 +187,13 @@
 
   ::selection {
     background-color: var(--color-accent);
-    color: var(--color-ink);
+    color: #fff;
   }
 
   h1, h2, h3, h4 {
     font-family: var(--font-display);
-    letter-spacing: -0.02em;
+    letter-spacing: -0.045em;
+    font-weight: 500;
   }
 
   /* Custom scrollbar */
@@ -197,7 +201,7 @@
     width: 10px;
   }
   ::-webkit-scrollbar-track {
-    background: var(--color-ink);
+    background: transparent;
   }
   ::-webkit-scrollbar-thumb {
     background: var(--color-line);
@@ -238,8 +242,19 @@
   }
 
   .noise {
-    background-image: radial-gradient(rgba(255,255,255,0.035) 1px, transparent 1px);
+    background-image: radial-gradient(rgba(0,0,0,0.045) 1px, transparent 1px);
     background-size: 3px 3px;
+  }
+
+  .glass-pill {
+    background: rgba(255, 255, 255, 0.72);
+    backdrop-filter: blur(18px);
+    box-shadow: 0 1px 2px rgba(0,0,0,0.04), 0 12px 40px -18px rgba(0,0,0,0.35);
+  }
+
+  .gloss-card {
+    background: linear-gradient(160deg, #ffffff 0%, #f4f4f3 100%);
+    box-shadow: 0 1px 0 rgba(255,255,255,0.9) inset, 0 20px 50px -30px rgba(0,0,0,0.45);
   }
 
   /* Mask reveal for text/headings */

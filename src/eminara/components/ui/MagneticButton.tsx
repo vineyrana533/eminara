@@ -42,11 +42,11 @@ export default function MagneticButton({
     "group inline-flex items-center justify-center gap-2 rounded-full font-medium transition-colors duration-300 will-change-transform",
     size === "lg" ? "px-7 py-4 text-[0.95rem]" : "px-5 py-2.5 text-sm",
     variant === "primary" &&
-      "bg-cream text-ink hover:bg-white",
+      "bg-cream text-ink-2 hover:bg-cream-dim",
     variant === "accent" &&
-      "bg-accent text-ink hover:bg-accent-dim",
+      "bg-cream text-ink-2 shadow-[0_14px_36px_-18px_rgba(0,0,0,0.8)] hover:bg-accent hover:text-white",
     variant === "ghost" &&
-      "border border-line text-cream hover:border-cream/40 hover:bg-white/5",
+      "border border-line bg-white/60 text-cream backdrop-blur hover:border-cream/30 hover:bg-white",
     className
   );
 
