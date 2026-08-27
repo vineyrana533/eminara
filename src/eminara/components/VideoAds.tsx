@@ -128,7 +128,7 @@ export default function VideoAds() {
       {/* Horizontal rail — full-bleed, edge padded to the container */}
       <div
         ref={railRef}
-        className="no-scrollbar mt-12 flex snap-x snap-mandatory gap-5 overflow-x-auto scroll-smooth px-6 pb-4 sm:px-10 lg:px-[max(2.5rem,calc((100vw-80rem)/2+2rem))]"
+        className="no-scrollbar mt-12 flex snap-x snap-mandatory gap-5 overflow-x-auto scroll-smooth px-6 pb-4 sm:px-10 lg:px-16 xl:px-24"
       >
         {ADS.map((ad, i) => (
           <motion.article
