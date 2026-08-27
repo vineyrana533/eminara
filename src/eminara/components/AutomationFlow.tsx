@@ -19,7 +19,7 @@ export default function AutomationFlow() {
   const scaleY = useSpring(scrollYProgress, { stiffness: 60, damping: 20 });
   const pulseTop = useTransform(scrollYProgress, [0, 1], ["0%", "100%"]);
 
-  const current = STEPS[active];
+  const current = STEPS[active]!;
 
   return (
     <section className="relative border-y border-line-soft bg-ink-2/40 py-24 sm:py-32">
