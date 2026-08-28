@@ -17,6 +17,7 @@ const LINKS = [
 export default function Navbar() {
   const [scrolled, setScrolled] = useState(false);
   const [open, setOpen] = useState(false);
+  const [contactFocus, setContactFocus] = useState(false);
   const reduce = useReducedMotion();
   const { scrollYProgress } = useScroll();
   const progress = useSpring(scrollYProgress, { stiffness: 120, damping: 30 });
@@ -30,6 +31,7 @@ export default function Navbar() {
 
   const go = (href: string) => {
     setOpen(false);
+    setContactFocus(href === "#contact");
     // allow menu to begin closing before scrolling
     setTimeout(() => scrollToId(href), reduce ? 0 : 120);
   };
@@ -53,8 +55,9 @@ export default function Navbar() {
       >
         <div
           className={cn(
-            "mx-auto flex w-full max-w-6xl items-center justify-between rounded-full px-3 pl-5 transition-all duration-500",
-            scrolled ? "glass-pill h-14" : "h-16 bg-white/45 backdrop-blur-md"
+            "mx-auto flex w-full items-center justify-between rounded-full px-3 pl-5 transition-all duration-500",
+            contactFocus ? "glass-pill max-w-[108rem] h-[84px]" : "max-w-6xl",
+            !contactFocus && (scrolled ? "glass-pill h-14" : "h-16 bg-white/45 backdrop-blur-md")
           )}
         >
           <Logo onClick={() => go("#top")} />
