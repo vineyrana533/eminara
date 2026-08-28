@@ -12,7 +12,7 @@ function Line({ children, delay }: { children: ReactNode; delay: number }) {
       <motion.span
         className="block"
         initial={reduce ? { opacity: 0 } : { y: "110%" }}
-        animate={inView ? (reduce ? { opacity: 1 } : { y: 0 }) : undefined}
+        animate={inView ? (reduce ? { opacity: 1 } : { y: 0 }) : (reduce ? { opacity: 0 } : { y: "110%" })}
         transition={{ duration: 0.9, delay, ease: [0.16, 1, 0.3, 1] }}
       >
         {children}
