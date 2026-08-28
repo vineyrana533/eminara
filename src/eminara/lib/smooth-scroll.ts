@@ -43,7 +43,10 @@ export function useLenis() {
 export function scrollToId(id: string) {
   const el = document.querySelector(id);
   if (!el) return;
+  // Contact section has extra top padding — scroll a little deeper so the
+  // badge and heading land higher in the viewport.
+  const offset = id === "#contact" ? -160 : -72;
   const lenis = (document as any).__lenis;
-  if (lenis) lenis.scrollTo(el as HTMLElement, { offset: -72 });
+  if (lenis) lenis.scrollTo(el as HTMLElement, { offset });
   else (el as HTMLElement).scrollIntoView({ behavior: "smooth" });
 }

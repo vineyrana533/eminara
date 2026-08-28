@@ -1,17 +1,18 @@
-import type { ReactNode } from "react";
-import { motion, useReducedMotion } from "framer-motion";
+import { useRef, type ReactNode } from "react";
+import { motion, useInView, useReducedMotion } from "framer-motion";
 import MagneticButton from "./ui/MagneticButton";
 import { scrollToId } from "../lib/smooth-scroll";
 
 function Line({ children, delay }: { children: ReactNode; delay: number }) {
   const reduce = useReducedMotion();
+  const ref = useRef<HTMLSpanElement>(null);
+  const inView = useInView(ref, { once: true, amount: 0.4 });
   return (
-    <span className="block overflow-hidden">
+    <span ref={ref} className="block overflow-hidden">
       <motion.span
         className="block"
         initial={reduce ? { opacity: 0 } : { y: "110%" }}
-        whileInView={reduce ? { opacity: 1 } : { y: 0 }}
-        viewport={{ once: true }}
+        animate={inView ? (reduce ? { opacity: 1 } : { y: 0 }) : (reduce ? { opacity: 0 } : { y: "110%" })}
         transition={{ duration: 0.9, delay, ease: [0.16, 1, 0.3, 1] }}
       >
         {children}
