@@ -23,7 +23,7 @@ function Line({ children, delay }: { children: ReactNode; delay: number }) {
 
 export default function FinalCTA() {
   return (
-    <section id="contact" className="relative scroll-mt-20 overflow-hidden py-28 sm:py-36">
+    <section id="contact" className="relative min-h-screen scroll-mt-20 overflow-hidden py-28 sm:py-36">
       {/* glow */}
       <div className="pointer-events-none absolute inset-0 -z-10">
         <div className="absolute left-1/2 top-1/2 h-[460px] w-[760px] -translate-x-1/2 -translate-y-1/2 rounded-full bg-accent/[0.07] blur-[130px]" />
@@ -44,13 +44,13 @@ export default function FinalCTA() {
           whileInView={{ opacity: 1, y: 0 }}
           viewport={{ once: true }}
           transition={{ duration: 0.7, ease: [0.16, 1, 0.3, 1] }}
-          className="mb-8 inline-flex items-center gap-2.5 rounded-full border border-line bg-panel/60 px-4 py-1.5 text-xs text-cream-dim backdrop-blur"
+          className="mb-20 inline-flex items-center gap-2.5 rounded-full border border-line bg-panel/60 px-4 py-1.5 text-xs text-cream-dim backdrop-blur"
         >
           <span className="h-1.5 w-1.5 rounded-full bg-accent animate-pulse" aria-hidden="true" />
           Free 30-minute strategy call · No obligation
         </motion.div>
 
-        <h2 className="max-w-4xl text-balance text-5xl font-medium leading-[1.02] tracking-tight text-cream sm:text-6xl lg:text-7xl">
+        <h2 className="max-w-4xl text-balance text-5xl font-medium leading-[1.02] tracking-tight text-cream sm:text-6xl lg:text-8xl">
           <Line delay={0.05}>Ready to put</Line>
           <Line delay={0.15}>AI to <span className="font-serif-italic text-accent">work?</span></Line>
         </h2>
@@ -60,7 +60,7 @@ export default function FinalCTA() {
           whileInView={{ opacity: 1, y: 0 }}
           viewport={{ once: true }}
           transition={{ duration: 0.8, delay: 0.35, ease: [0.16, 1, 0.3, 1] }}
-          className="mt-7 max-w-xl text-balance text-base leading-relaxed text-cream-dim sm:text-lg"
+          className="mt-14 max-w-xl text-balance text-base leading-relaxed text-cream-dim sm:text-lg"
         >
           Tell us what is slowing your business down. We'll show you exactly where AI can
           make a real difference — and what it would take to build it.
@@ -71,7 +71,7 @@ export default function FinalCTA() {
           whileInView={{ opacity: 1, y: 0 }}
           viewport={{ once: true }}
           transition={{ duration: 0.8, delay: 0.5, ease: [0.16, 1, 0.3, 1] }}
-          className="mt-10 flex flex-col items-center gap-3 sm:flex-row"
+          className="mt-20 flex flex-col items-center gap-3 sm:flex-row"
         >
           <MagneticButton href="#contact" size="lg" variant="accent" onClick={() => scrollToId("#contact")}>
             Book a Strategy Call
