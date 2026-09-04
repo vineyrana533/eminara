@@ -107,7 +107,7 @@ export default function ParallaxShowcase() {
           <div className="glass-pill absolute right-[7%] top-24 px-5 py-3 text-xs uppercase tracking-[0.2em] text-cream-dim">
             Built to your workflow
           </div>
-          <div className="glass-pill absolute bottom-4 left-[14%] px-5 py-3 text-xs uppercase tracking-[0.2em] text-cream-dim">
+          <div className="glass-pill absolute bottom-16 left-[6%] px-5 py-3 text-xs uppercase tracking-[0.2em] text-cream-dim">
             Measured, then tuned
           </div>
         </div>
