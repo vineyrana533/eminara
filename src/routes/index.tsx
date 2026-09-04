@@ -63,6 +63,7 @@ function Index() {
         <Portfolio />
         <VideoAds />
         <CaseStudies />
+        <ParallaxShowcase />
         <Process />
         <WhoWeHelp />
         <WhyEmiNara />
