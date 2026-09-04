@@ -12,6 +12,7 @@ import AutomationFlow from "../eminara/components/AutomationFlow";
 import Portfolio from "../eminara/components/Portfolio";
 import VideoAds from "../eminara/components/VideoAds";
 import CaseStudies from "../eminara/components/CaseStudies";
+import ParallaxShowcase from "../eminara/components/ParallaxShowcase";
 import Process from "../eminara/components/Process";
 import WhoWeHelp from "../eminara/components/WhoWeHelp";
 import WhyEmiNara from "../eminara/components/WhyEmiNara";
@@ -62,6 +63,7 @@ function Index() {
         <Portfolio />
         <VideoAds />
         <CaseStudies />
+        <ParallaxShowcase />
         <Process />
         <WhoWeHelp />
         <WhyEmiNara />
