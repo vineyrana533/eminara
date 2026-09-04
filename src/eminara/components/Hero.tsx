@@ -37,12 +37,17 @@ export default function Hero() {
           </motion.div>
 
           <h1 className="text-balance text-[2.9rem] font-medium leading-[0.95] tracking-[-0.05em] text-cream sm:text-7xl lg:text-[5.5rem] xl:text-[6.5rem]">
-            <Words text="We build AI systems" />
-            <br />
-            <Words text="that move your" />
-            <span className="font-serif-italic text-accent"> business </span>
-            <Words text="forward." className="font-serif-italic" />
+            <WordsPullUpMultiStyle
+              className="justify-center"
+              delay={0.1}
+              segments={[
+                { text: "We build AI systems that move your" },
+                { text: "business", className: "font-serif-italic text-accent" },
+                { text: "forward.", className: "font-serif-italic" },
+              ]}
+            />
           </h1>
+
 
           <motion.p
             initial={{ opacity: 0, y: 20 }}
