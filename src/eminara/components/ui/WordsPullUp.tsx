@@ -77,7 +77,10 @@ export const WordsPullUpMultiStyle = ({
   const words: { word: string; className?: string }[] = [];
   segments.forEach((seg) => {
     seg.text.split(" ").forEach((w) => {
-      if (w) words.push({ word: w, className: seg.className });
+      if (!w) return;
+      const item: { word: string; className?: string } = { word: w };
+      if (seg.className) item.className = seg.className;
+      words.push(item);
     });
   });
 
