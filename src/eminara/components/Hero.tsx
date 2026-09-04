@@ -1,32 +1,9 @@
-import { motion, useReducedMotion } from "framer-motion";
+import { motion } from "framer-motion";
 import MagneticButton from "./ui/MagneticButton";
 import HeroWorkflow from "./HeroWorkflow";
+import { WordsPullUpMultiStyle } from "./ui/WordsPullUp";
 import { scrollToId } from "../lib/smooth-scroll";
 
-function Words({ text, className }: { text: string; className?: string }) {
-  const reduce = useReducedMotion();
-  return (
-    <span className={className}>
-      {text.split(" ").map((w, i) => (
-        <span key={i} className="inline-block overflow-hidden align-bottom">
-          <motion.span
-            className="inline-block"
-            initial={reduce ? { opacity: 0 } : { y: "110%" }}
-            animate={reduce ? { opacity: 1 } : { y: 0 }}
-            transition={{
-              duration: 0.9,
-              delay: 0.1 + i * 0.07,
-              ease: [0.16, 1, 0.3, 1],
-            }}
-          >
-            {w}
-          </motion.span>
-          {i < text.split(" ").length - 1 && <span>&nbsp;</span>}
-        </span>
-      ))}
-    </span>
-  );
-}
 
 export default function Hero() {
   return (
