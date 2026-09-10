@@ -1,4 +1,4 @@
-import { memo, useEffect, useLayoutEffect, useMemo, useState } from "react";
+import { memo, useEffect, useLayoutEffect, useMemo, useRef, useState } from "react";
 import {
   AnimatePresence,
   motion,
@@ -47,6 +47,7 @@ export interface CarouselCard {
   tag: string;
 }
 
+const AUTO_SPIN_DEG_PER_SEC = 5;
 const duration = 0.15;
 const transition = { duration, ease: [0.32, 0.72, 0, 1] as const, filter: "blur(4px)" };
 const transitionOverlay = { duration: 0.5, ease: [0.32, 0.72, 0, 1] as const };
@@ -70,6 +71,26 @@ const Carousel = memo(
     const radius = cylinderWidth / (2 * Math.PI);
     const rotation = useMotionValue(0);
     const transform = useTransform(rotation, (value) => `rotate3d(0, 1, 0, ${value}deg)`);
+    const isDraggingRef = useRef(false);
+    const isMomentumRef = useRef(false);
+
+    // Gentle continuous auto-spin. Paused while the user drags or the
+    // momentum spring is still settling.
+    useEffect(() => {
+      if (!isCarouselActive) return;
+      let raf = 0;
+      let last = performance.now();
+      const tick = (now: number) => {
+        const dt = Math.min((now - last) / 1000, 0.05);
+        last = now;
+        if (!isDraggingRef.current && !isMomentumRef.current) {
+          rotation.set(rotation.get() + dt * AUTO_SPIN_DEG_PER_SEC);
+        }
+        raf = requestAnimationFrame(tick);
+      };
+      raf = requestAnimationFrame(tick);
+      return () => cancelAnimationFrame(raf);
+    }, [isCarouselActive, rotation]);
 
     return (
       <div
@@ -89,21 +110,34 @@ const Carousel = memo(
             width: cylinderWidth,
             transformStyle: "preserve-3d",
           }}
+          onDragStart={() => {
+            isDraggingRef.current = true;
+            controls.stop();
+          }}
           onDrag={(_, info) =>
             isCarouselActive && rotation.set(rotation.get() + info.offset.x * 0.05)
           }
-          onDragEnd={(_, info) =>
-            isCarouselActive &&
-            controls.start({
-              rotateY: rotation.get() + info.velocity.x * 0.05,
-              transition: {
-                type: "spring",
-                stiffness: 100,
-                damping: 30,
-                mass: 0.1,
-              },
-            })
-          }
+          onDragEnd={(_, info) => {
+            isDraggingRef.current = false;
+            if (!isCarouselActive) return;
+            isMomentumRef.current = true;
+            const settle = () => {
+              isMomentumRef.current = false;
+            };
+            const fallback = setTimeout(settle, 1500);
+            controls
+              .start({
+                rotateY: rotation.get() + info.velocity.x * 0.05,
+                transition: {
+                  type: "spring",
+                  stiffness: 100,
+                  damping: 30,
+                  mass: 0.1,
+                },
+              })
+              .then(settle, settle)
+              .finally(() => clearTimeout(fallback));
+          }}
           animate={controls}
         >
           {cards.map((card, i) => (
