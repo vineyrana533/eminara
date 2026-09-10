@@ -147,6 +147,8 @@ const Carousel = memo(
               style={{
                 width: `${faceWidth}px`,
                 transform: `rotateY(${i * (360 / faceCount)}deg) translateZ(${radius}px)`,
+                backfaceVisibility: "hidden",
+                WebkitBackfaceVisibility: "hidden",
               }}
               onClick={() => handleClick(card, i)}
             >
@@ -193,6 +195,21 @@ export function ThreeDPhotoCarousel({ cards }: { cards: CarouselCard[] }) {
     setActiveCard(null);
     setIsCarouselActive(true);
   };
+
+  // Clicking anywhere while a card is enlarged returns to the spinning ring.
+  useEffect(() => {
+    if (!activeCard) return;
+    const onPointerDown = () => handleClose();
+    const onKeyDown = (e: KeyboardEvent) => {
+      if (e.key === "Escape") handleClose();
+    };
+    window.addEventListener("pointerdown", onPointerDown);
+    window.addEventListener("keydown", onKeyDown);
+    return () => {
+      window.removeEventListener("pointerdown", onPointerDown);
+      window.removeEventListener("keydown", onKeyDown);
+    };
+  }, [activeCard]);
 
   return (
     <motion.div layout className="relative">
