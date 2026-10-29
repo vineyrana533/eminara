@@ -1,87 +1,81 @@
-import { useRef, useState, useEffect } from "react";
-import { motion } from "framer-motion";
+import { useEffect, useState } from "react";
+import { Play } from "lucide-react";
 import Reveal from "./ui/Reveal";
 import MagneticButton from "./ui/MagneticButton";
+import { TiltedGridHero, type TiltedGridImage } from "@/components/ui/tilted-grid-hero";
+import { Dialog, DialogContent, DialogDescription, DialogTitle } from "@/components/ui/dialog";
+import { cn } from "@/lib/utils";
 import { scrollToId } from "../lib/smooth-scroll";
 
-const ADS = [
-  {
+type Ad = TiltedGridImage & {
+  title: string;
+  tag: string;
+  dur: string;
+  video: string;
+  portrait?: boolean;
+};
+
+// Files live in public/videos. Posters are 16:9 stills cut from each video;
+// portrait spots sit on a blurred copy of themselves so the whole frame shows.
+const ad = (slug: string, rest: Omit<Ad, "src" | "video">): Ad => ({
+  src: `/videos/posters/${slug}.jpg`,
+  video: `/videos/${slug}.mp4`,
+  ...rest,
+});
+
+const ADS: Ad[] = [
+  ad("faresmatch-ugc", {
+    title: "FaresMatch — Deal Found",
     tag: "UGC-style",
-    dur: "0:30",
-    img: "https://images.pexels.com/photos/7148384/pexels-photo-7148384.jpeg?auto=compress&cs=tinysrgb&fit=crop&h=1400&w=900",
-    title: "Glow Ritual — Skincare",
-    cap: "Creator-led hook, 3 variants tested in 48h",
-  },
-  {
-    tag: "Product Ad",
     dur: "0:15",
-    img: "https://images.pexels.com/photos/3394650/pexels-photo-3394650.jpeg?auto=compress&cs=tinysrgb&fit=crop&h=1400&w=900",
-    title: "Auralab — Studio Sound",
-    cap: "Hero lighting, AI-generated set extension",
-  },
-  {
-    tag: "Social Ad",
-    dur: "9:16",
-    img: "https://images.pexels.com/photos/1598505/pexels-photo-1598505.jpeg?auto=compress&cs=tinysrgb&fit=crop&h=1400&w=900",
-    title: "Kickstep — Drop 04",
-    cap: "Bold colour blocking for TikTok & Reels",
-  },
-  {
-    tag: "Short-form",
-    dur: "0:22",
-    img: "https://images.pexels.com/photos/2074130/pexels-photo-2074130.jpeg?auto=compress&cs=tinysrgb&fit=crop&h=1400&w=900",
-    title: "Roastline — Slow Mornings",
-    cap: "Lifestyle reel cut for organic + paid",
-  },
-  {
-    tag: "SaaS Spot",
-    dur: "0:45",
-    img: "https://images.pexels.com/photos/3184292/pexels-photo-3184292.jpeg?auto=compress&cs=tinysrgb&fit=crop&h=1400&w=900",
-    title: "Nodeflow — Product Tour",
-    cap: "Explainer with motion UI and VO",
-  },
-  {
-    tag: "Brand Film",
-    dur: "1:10",
-    img: "https://images.pexels.com/photos/1181244/pexels-photo-1181244.jpeg?auto=compress&cs=tinysrgb&fit=crop&h=1400&w=900",
-    title: "Meridian — Founder Story",
-    cap: "Documentary tone, AI-assisted edit",
-  },
-  {
-    tag: "Retail",
-    dur: "0:18",
-    img: "https://images.pexels.com/photos/994523/pexels-photo-994523.jpeg?auto=compress&cs=tinysrgb&fit=crop&h=1400&w=900",
-    title: "Casa Verde — Spring Set",
-    cap: "Catalogue stills turned into motion",
-  },
+    alt: "FaresMatch UGC travel ad where two creators pick a destination and find a deal",
+  }),
+  ad("blender-ugc", {
+    title: "Smoothie Blender",
+    tag: "Product ad",
+    dur: "0:15",
+    portrait: true,
+    alt: "Kitchen product ad for a countertop smoothie blender",
+  }),
+  ad("faresmatch-spot", {
+    title: "FaresMatch — Say Less",
+    tag: "Brand spot",
+    dur: "0:15",
+    alt: "Cinematic FaresMatch spot showing travel credit and price protection",
+  }),
+  ad("toothbrush-ugc", {
+    title: "Sonic Toothbrush",
+    tag: "Social ad",
+    dur: "0:10",
+    portrait: true,
+    alt: "Morning-routine social ad for an electric toothbrush",
+  }),
+  ad("skincare-ugc", {
+    title: "Rosehip Face Oil",
+    tag: "Skincare UGC",
+    dur: "0:12",
+    portrait: true,
+    alt: "Creator-led skincare ad for a rosehip seed face oil",
+  }),
 ];
 
 export default function VideoAds() {
-  const railRef = useRef<HTMLDivElement>(null);
-  const [progress, setProgress] = useState(0);
+  const [active, setActive] = useState<number | null>(null);
+  const current = active === null ? null : ADS[active];
+  const open = current !== null;
 
+  // Lenis drives page scrolling from its own wheel handler, so hold it while
+  // the player is up or the page would scroll behind the dialog.
   useEffect(() => {
-    const el = railRef.current;
-    if (!el) return;
-    const onScroll = () => {
-      const max = el.scrollWidth - el.clientWidth;
-      setProgress(max > 0 ? el.scrollLeft / max : 0);
-    };
-    onScroll();
-    el.addEventListener("scroll", onScroll, { passive: true });
-    return () => el.removeEventListener("scroll", onScroll);
-  }, []);
-
-  const nudge = (dir: 1 | -1) => {
-    const el = railRef.current;
-    if (!el) return;
-    el.scrollBy({ left: dir * Math.min(el.clientWidth * 0.8, 720), behavior: "smooth" });
-  };
+    const lenis = (document as unknown as { __lenis?: { stop(): void; start(): void } }).__lenis;
+    if (!lenis || !open) return;
+    lenis.stop();
+    return () => lenis.start();
+  }, [open]);
 
   return (
-    <section className="relative overflow-hidden border-t border-line-soft py-24 sm:py-28">
+    <section id="video-ads" className="relative scroll-mt-20 overflow-hidden border-t border-line-soft py-24 sm:py-28">
       <div className="container-x">
-        {/* Top bar: pill eyebrow + headline + arrows */}
         <Reveal>
           <div className="flex flex-wrap items-center gap-4 sm:gap-6">
             <span className="glass-pill inline-flex items-center gap-2 rounded-full px-5 py-3 text-sm font-medium text-cream">
@@ -93,102 +87,63 @@ export default function VideoAds() {
               The best ads are built{" "}
               <span className="font-serif-italic text-accent">shot by shot.</span>
             </h2>
-
-            <div className="hidden items-center gap-2 sm:flex">
-              {([-1, 1] as const).map((dir) => (
-                <button
-                  key={dir}
-                  onClick={() => nudge(dir)}
-                  aria-label={dir === -1 ? "Scroll left" : "Scroll right"}
-                  className="flex h-11 w-11 items-center justify-center rounded-full border border-line bg-white/70 text-cream backdrop-blur transition-all duration-300 hover:bg-cream hover:text-white"
-                >
-                  <svg className="h-4 w-4" viewBox="0 0 16 16" fill="none" aria-hidden="true">
-                    <path
-                      d={dir === -1 ? "M13 8H3M7 4L3 8l4 4" : "M3 8h10M9 4l4 4-4 4"}
-                      stroke="currentColor"
-                      strokeWidth="1.6"
-                      strokeLinecap="round"
-                      strokeLinejoin="round"
-                    />
-                  </svg>
-                </button>
-              ))}
-            </div>
           </div>
         </Reveal>
 
         <Reveal delay={0.05}>
           <p className="mt-6 max-w-2xl text-base leading-relaxed text-cream-dim">
-            AI-powered creative that lets you test ideas fast — product ads, SaaS spots, social and
-            short-form, all produced in days instead of weeks. Drag the rail to browse the work.
+            AI-powered creative that lets you test ideas fast — product ads, UGC, social and brand
+            spots, all produced in days instead of weeks. Tap any frame to watch the spot.
           </p>
         </Reveal>
       </div>
 
-      {/* Horizontal rail — full-bleed, edge padded to the container */}
-      <div
-        ref={railRef}
-        className="no-scrollbar mt-12 flex snap-x snap-mandatory gap-5 overflow-x-auto scroll-smooth px-6 pb-4 sm:px-10 lg:px-16 xl:px-24"
-      >
-        {ADS.map((ad, i) => (
-          <motion.article
-            key={ad.title}
-            initial={{ opacity: 0, y: 28 }}
-            whileInView={{ opacity: 1, y: 0 }}
-            viewport={{ once: true, margin: "-80px" }}
-            transition={{ duration: 0.6, delay: (i % 4) * 0.06, ease: [0.22, 1, 0.36, 1] }}
-            className="group w-[72vw] shrink-0 snap-start sm:w-[46vw] lg:w-[22rem]"
-          >
-            <div className="gloss-card relative aspect-[9/13] overflow-hidden rounded-[1.75rem] border border-line">
-              <img
-                src={ad.img}
-                alt={`${ad.title} — ${ad.tag} concept`}
-                loading="lazy"
-                className="h-full w-full object-cover transition-transform duration-[900ms] ease-out group-hover:scale-[1.06]"
-              />
-              <div className="pointer-events-none absolute inset-0 bg-gradient-to-t from-black/55 via-transparent to-transparent" />
-
-              <span className="absolute left-4 top-4 rounded-full bg-white/85 px-3 py-1.5 text-[0.65rem] font-medium uppercase tracking-[0.12em] text-cream backdrop-blur">
-                {ad.tag}
+      {/* Curved, self-scrolling reel of real spots — full-bleed. Hover pauses it; click plays. */}
+      <Reveal delay={0.1}>
+        <TiltedGridHero
+          images={ADS}
+          speed={3.5}
+          tileHeight={62}
+          axis={50}
+          curve={70}
+          fade={10}
+          onTileClick={(_, i) => setActive(i)}
+          renderTile={(img, i) => (
+            <div className="flex flex-col items-center gap-3">
+              <span className="flex h-12 w-12 items-center justify-center rounded-full bg-white/90 text-cream shadow-lg backdrop-blur transition-transform duration-300 group-hover/tile:scale-110 sm:h-16 sm:w-16">
+                <Play className="ml-0.5 h-5 w-5 fill-current sm:h-6 sm:w-6" />
               </span>
-              <span className="absolute right-4 top-4 rounded-full bg-black/45 px-2.5 py-1.5 text-[0.65rem] font-medium text-white backdrop-blur">
-                {ad.dur}
+              <span className="rounded-full bg-black/55 px-3 py-1.5 text-[0.65rem] font-medium uppercase tracking-[0.12em] text-white backdrop-blur">
+                {ADS[i]?.tag ?? img.alt} · {ADS[i]?.dur}
               </span>
-
-              <div className="absolute inset-0 flex items-center justify-center">
-                <span className="flex h-14 w-14 translate-y-2 items-center justify-center rounded-full bg-white/90 text-cream opacity-0 shadow-lg backdrop-blur transition-all duration-500 group-hover:translate-y-0 group-hover:opacity-100">
-                  <svg className="ml-0.5 h-5 w-5" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true">
-                    <path d="M7 4l13 8-13 8z" />
-                  </svg>
-                </span>
-              </div>
             </div>
+          )}
+          className="mt-12 h-[300px] w-full sm:h-[380px] lg:h-[460px]"
+        />
 
-            <div className="mt-4 px-1">
-              <h3 className="text-lg font-medium tracking-[-0.02em] text-cream">{ad.title}</h3>
-              <p className="mt-1 text-sm text-muted">{ad.cap}</p>
-            </div>
-          </motion.article>
-        ))}
+        {/* The reel is decorative to assistive tech, so every spot is also a real button here. */}
+        <ul className="no-scrollbar mt-6 flex gap-2 overflow-x-auto px-6 sm:flex-wrap sm:justify-center sm:overflow-visible">
+          {ADS.map((a, i) => (
+            <li key={a.video} className="shrink-0">
+              <button
+                type="button"
+                onClick={() => setActive(i)}
+                className="inline-flex items-center gap-1.5 rounded-full border border-line bg-white/85 px-3 py-1.5 text-[0.65rem] font-medium uppercase tracking-[0.12em] text-cream backdrop-blur transition-colors hover:bg-cream hover:text-white focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-accent"
+              >
+                <Play className="h-2.5 w-2.5 fill-current" aria-hidden="true" />
+                {a.title}
+              </button>
+            </li>
+          ))}
+        </ul>
+      </Reveal>
 
-        {/* trailing spacer so the last card can rest away from the edge */}
-        <div className="w-2 shrink-0 sm:w-8" aria-hidden="true" />
-      </div>
-
-      {/* Scroll progress bar */}
       <div className="container-x">
-        <div className="mt-4 h-[3px] w-full max-w-xs overflow-hidden rounded-full bg-line">
-          <div
-            className="h-full rounded-full bg-accent transition-[width] duration-150 ease-out"
-            style={{ width: `${Math.max(12, progress * 100)}%` }}
-          />
-        </div>
-
-        <Reveal delay={0.1}>
+        <Reveal delay={0.15}>
           <div className="mt-12 flex flex-wrap items-center justify-between gap-4 rounded-[1.5rem] border border-line bg-white/70 px-6 py-5 backdrop-blur">
             <p className="text-sm text-cream-dim">
-              <span className="text-muted">Note:</span> concept frames shown — every spot is delivered
-              ready for paid social, TikTok, Reels and YouTube.
+              <span className="text-muted">Note:</span> every spot is delivered ready for paid
+              social, TikTok, Reels and YouTube.
             </p>
             <MagneticButton href="#contact" variant="accent" onClick={() => scrollToId("#contact")}>
               Make my ad →
@@ -196,6 +151,51 @@ export default function VideoAds() {
           </div>
         </Reveal>
       </div>
+
+      <Dialog open={open} onOpenChange={(next) => !next && setActive(null)}>
+        <DialogContent
+          className={cn(
+            "w-[92vw] gap-0 overflow-hidden rounded-2xl border-0 bg-black p-0 sm:rounded-2xl",
+            "[&>button]:z-10 [&>button]:rounded-full [&>button]:bg-white/90! [&>button]:p-2 [&>button]:text-cream! [&>button]:opacity-100",
+            current?.portrait ? "max-w-[min(92vw,30rem)]" : "max-w-5xl",
+          )}
+        >
+          {current ? (
+            <>
+              <video
+                key={current.video}
+                src={current.video}
+                poster={current.src}
+                controls
+                autoPlay
+                playsInline
+                className="block max-h-[78vh] w-full bg-black object-contain"
+              />
+              <div className="flex items-center justify-between gap-4 bg-white px-5 py-4">
+                <div>
+                  <DialogTitle className="text-base font-medium tracking-[-0.02em] text-cream">
+                    {current.title}
+                  </DialogTitle>
+                  <DialogDescription className="mt-1 text-sm text-muted">
+                    {current.tag} · {current.dur}
+                  </DialogDescription>
+                </div>
+                <MagneticButton
+                  href="#contact"
+                  variant="accent"
+                  onClick={() => {
+                    setActive(null);
+                    // Wait for the dialog to close and release its scroll lock.
+                    window.setTimeout(() => scrollToId("#contact"), 250);
+                  }}
+                >
+                  Make one like this →
+                </MagneticButton>
+              </div>
+            </>
+          ) : null}
+        </DialogContent>
+      </Dialog>
     </section>
   );
 }

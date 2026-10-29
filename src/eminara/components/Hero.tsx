@@ -1,8 +1,29 @@
+import { useEffect, useRef, useState } from "react";
 import { motion, useReducedMotion } from "framer-motion";
 import MagneticButton from "./ui/MagneticButton";
-import HeroWorkflow from "./HeroWorkflow";
-import HeroAmbient from "./HeroAmbient";
+import HeroCore from "./HeroCore";
 import { scrollToId } from "../lib/smooth-scroll";
+
+const INDUSTRIES = [
+  "Startups",
+  "SaaS",
+  "Healthcare",
+  "Dental clinics",
+  "Real estate",
+  "E-commerce",
+  "Travel agencies",
+  "Law firms",
+  "Home services",
+  "Fitness & wellness",
+  "Salons & spas",
+  "Restaurants",
+  "Hospitality",
+  "Education",
+  "Insurance",
+  "Auto dealerships",
+  "Agencies",
+  "Professional services",
+];
 
 function Words({ text, className }: { text: string; className?: string }) {
   const reduce = useReducedMotion();
@@ -10,15 +31,21 @@ function Words({ text, className }: { text: string; className?: string }) {
     <span className={className}>
       {text.split(" ").map((w, i) => (
         <span key={i} className="inline-block overflow-hidden align-bottom">
+          {/* The start state must match the server's HTML, so reduced motion
+              only changes the timing: the words appear in place at once. */}
           <motion.span
             className="inline-block"
-            initial={reduce ? { opacity: 0 } : { y: "110%" }}
-            animate={reduce ? { opacity: 1 } : { y: 0 }}
-            transition={{
-              duration: 0.9,
-              delay: 0.1 + i * 0.07,
-              ease: [0.16, 1, 0.3, 1],
-            }}
+            initial={{ y: "110%" }}
+            animate={{ y: 0 }}
+            transition={
+              reduce
+                ? { duration: 0 }
+                : {
+                    duration: 0.9,
+                    delay: 0.1 + i * 0.07,
+                    ease: [0.16, 1, 0.3, 1],
+                  }
+            }
           >
             {w}
           </motion.span>
@@ -29,109 +56,136 @@ function Words({ text, className }: { text: string; className?: string }) {
   );
 }
 
-export default function Hero() {
-  return (
-    <section id="top" className="relative overflow-hidden pt-32 pb-20 sm:pt-40 lg:pt-44">
-      {/* backdrop */}
-      <div className="pointer-events-none absolute inset-0 -z-10">
-        <HeroAmbient />
-        <div
-          className="absolute inset-0 opacity-[0.5]"
-          style={{
-            backgroundImage:
-              "linear-gradient(var(--color-line-soft) 1px, transparent 1px), linear-gradient(90deg, var(--color-line-soft) 1px, transparent 1px)",
-            backgroundSize: "72px 72px",
-            maskImage: "radial-gradient(ellipse 90% 60% at 50% 0%, black 30%, transparent 75%)",
-            WebkitMaskImage:
-              "radial-gradient(ellipse 90% 60% at 50% 0%, black 30%, transparent 75%)",
-          }}
-        />
-        <div className="absolute left-1/2 top-0 h-[520px] w-[820px] -translate-x-1/2 rounded-full bg-accent/[0.06] blur-[130px]" />
-      </div>
+// An illustrative running total. Starts from a fixed value so the server and
+// browser render the same number.
+function useTaskCount() {
+  const [n, setN] = useState(2_481_093);
+  useEffect(() => {
+    const t = setInterval(() => setN((v) => v + 30 + (v % 23)), 120);
+    return () => clearInterval(t);
+  }, []);
+  return n;
+}
 
-      <div className="container-x flex flex-col items-center gap-14 text-center">
-        <div className="flex max-w-4xl flex-col items-center">
-          <motion.div
+export default function Hero() {
+  const copy = useRef<HTMLDivElement>(null);
+  const tasks = useTaskCount();
+
+  return (
+    // data-nav-dark tells the navbar to switch to its dark style while over this section.
+    <section
+      id="top"
+      data-nav-dark
+      className="relative min-h-[1060px] overflow-hidden bg-[#0b0b0d] text-white lg:h-[100svh] lg:min-h-[760px]"
+    >
+      <HeroCore copy={copy} />
+      {/* A soft shade behind the copy so the motion never fights the words. */}
+      <div className="pointer-events-none absolute inset-y-0 left-0 hidden w-[55%] bg-gradient-to-r from-[#0b0b0d]/85 via-[#0b0b0d]/45 to-transparent lg:block" />
+
+      <div className="container-x relative flex h-full flex-col justify-start pt-32 pb-24 lg:justify-center lg:pt-16">
+        <div ref={copy} className="max-w-xl">
+          <motion.p
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.8, ease: [0.16, 1, 0.3, 1] }}
-            className="mb-7 inline-flex items-center gap-2.5 rounded-full border border-line bg-panel/60 px-4 py-1.5 text-xs text-cream-dim backdrop-blur"
+            className="mb-6 inline-flex items-center gap-2 rounded-full border border-white/15 bg-white/5 px-4 py-1.5 text-xs text-white/70 backdrop-blur"
           >
             <span className="h-1.5 w-1.5 rounded-full bg-accent" aria-hidden="true" />
-            EmiNara AI · Intelligent systems for modern businesses
-          </motion.div>
+            One AI core · 1,000 agents
+          </motion.p>
 
-          <h1 className="text-balance text-[2.9rem] font-medium leading-[0.95] tracking-[-0.05em] text-cream sm:text-7xl lg:text-[5.5rem] xl:text-[6.5rem]">
-            <Words text="We build AI systems" />
+          <h1 className="text-[2.9rem] font-medium leading-[0.95] tracking-[-0.05em] sm:text-7xl lg:text-[5rem]">
+            <Words text="Everything your business does." />
             <br />
-            <Words text="that move your" />
-            <span className="font-serif-italic text-accent"> business </span>
-            <Words text="forward." className="font-serif-italic" />
+            <Words text="Done by one AI." className="font-serif-italic text-accent" />
           </h1>
 
           <motion.p
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.8, delay: 0.5, ease: [0.16, 1, 0.3, 1] }}
-            className="mt-7 max-w-xl text-balance text-base leading-relaxed text-cream-dim sm:text-xl"
+            className="mt-6 max-w-md text-base leading-relaxed text-white/70 sm:text-lg"
           >
-            We build AI-powered business systems that automate repetitive work, streamline
-            operations, and connect your workflows — from lead management and customer
-            communication to intelligent voice agents and automated follow-ups.
+            Calls, emails, invoices, leads and tickets pour in. EmiNara's AI handles every one — the
+            work of a thousand people, around the clock.
           </motion.p>
 
           <motion.div
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.8, delay: 0.65, ease: [0.16, 1, 0.3, 1] }}
-            className="mt-9 flex flex-col items-center gap-3 sm:flex-row sm:justify-center"
+            className="mt-8 flex flex-col gap-3 sm:flex-row"
           >
             <MagneticButton
               href="#contact"
               size="lg"
               variant="accent"
+              className="bg-accent text-white shadow-[0_14px_36px_-18px_rgba(255,47,146,0.9)] hover:bg-white hover:text-[#0b0b0d]"
               onClick={() => scrollToId("#contact")}
             >
               Book a Strategy Call
               <svg className="h-4 w-4" viewBox="0 0 16 16" fill="none" aria-hidden="true">
-                <path d="M3 8h10M9 4l4 4-4 4" stroke="currentColor" strokeWidth="1.6" strokeLinecap="round" strokeLinejoin="round" />
+                <path
+                  d="M3 8h10M9 4l4 4-4 4"
+                  stroke="currentColor"
+                  strokeWidth="1.6"
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                />
               </svg>
             </MagneticButton>
             <MagneticButton
               href="#work"
               size="lg"
               variant="ghost"
+              className="border-white/20 bg-transparent text-white/85 hover:border-white/40 hover:bg-white/10"
               onClick={() => scrollToId("#work")}
             >
               Explore Our Work
             </MagneticButton>
           </motion.div>
 
-          <motion.div
+          <motion.p
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
             transition={{ delay: 0.9, duration: 0.9 }}
-            className="mt-12 flex flex-wrap items-center justify-center gap-x-8 gap-y-3 text-xs text-muted"
+            className="mt-10 text-xs text-white/50"
           >
-            {["Startups", "SaaS", "Healthcare", "Real estate", "E-commerce"].map((x) => (
-              <span key={x} className="flex items-center gap-2">
-                <span className="h-1 w-1 rounded-full bg-faint" aria-hidden="true" />
-                {x}
-              </span>
-            ))}
-          </motion.div>
+            <span className="text-base font-medium tabular-nums text-white">
+              {tasks.toLocaleString("en-US")}
+            </span>{" "}
+            tasks handled today
+            <span className="ml-2 text-white/30">· illustrative</span>
+          </motion.p>
         </div>
-
-        {/* Right — workflow */}
-        <motion.div
-          initial={{ opacity: 0, y: 40, scale: 0.96 }}
-          animate={{ opacity: 1, y: 0, scale: 1 }}
-          transition={{ duration: 1, delay: 0.35, ease: [0.16, 1, 0.3, 1] }}
-          className="w-full max-w-3xl"
-        >
-          <HeroWorkflow />
-        </motion.div>
       </div>
+
+      {/* Industries we work with, running along the bottom edge. */}
+      <motion.div
+        initial={{ opacity: 0 }}
+        animate={{ opacity: 1 }}
+        transition={{ delay: 0.9, duration: 0.9 }}
+        className="absolute inset-x-0 bottom-0 overflow-hidden border-t border-white/10 bg-[#0b0b0d]/60 py-4 backdrop-blur-sm [mask-image:linear-gradient(90deg,transparent,#000_12%,#000_88%,transparent)]"
+      >
+        {/* Two copies side by side; the ticker keyframe slides by half, so the loop is seamless. */}
+        <div className="flex w-max animate-[ticker_40s_linear_infinite] whitespace-nowrap">
+          {[0, 1].map((n) => (
+            <ul key={n} className="flex shrink-0 items-center" aria-hidden={n === 1 || undefined}>
+              {INDUSTRIES.map((x) => (
+                <li
+                  key={x}
+                  className="flex items-center gap-8 pr-8 text-xs uppercase tracking-[0.22em] text-white/55"
+                >
+                  {x}
+                  <span className="text-accent" aria-hidden="true">
+                    ✦
+                  </span>
+                </li>
+              ))}
+            </ul>
+          ))}
+        </div>
+      </motion.div>
     </section>
   );
 }

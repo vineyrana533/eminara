@@ -6,7 +6,8 @@ import Reveal from "./ui/Reveal";
 import MagneticButton from "./ui/MagneticButton";
 import { scrollToId } from "../lib/smooth-scroll";
 import { cn } from "../utils/cn";
-import faresmatchHero from "../../assets/faresmatch-hero.png.asset.json";
+// Bundled with the app so it loads anywhere, not only on Lovable's asset host.
+import faresmatchHero from "../../assets/faresmatch-hero.webp";
 
 interface Project {
   id: string;
@@ -14,6 +15,8 @@ interface Project {
   industry: string;
   accent: string;
   image: string;
+  /** The image is a real capture of the site, so skip the drawn-on nav and headline. */
+  screenshot?: boolean;
   domain: string;
   link?: string;
   to?: "/faresmatch";
@@ -28,7 +31,8 @@ const PROJECTS: Project[] = [
     name: "FaresMatch",
     industry: "Travel Agency",
     accent: "#5BA3F5",
-    image: faresmatchHero.url,
+    image: faresmatchHero,
+    screenshot: true,
     domain: "faresmatch.com",
     link: "https://faresmatch.com",
     to: "/faresmatch",
@@ -83,7 +87,37 @@ const PROJECTS: Project[] = [
 ];
 
 function SiteMockup({ p }: { p: Project }) {
-  const preview = (
+  const preview = p.screenshot ? (
+    <>
+      {/* The capture is wider than the frame. A blurred copy fills the space
+          beneath it so the window keeps the same shape as the other projects. */}
+      <img
+        src={p.image}
+        alt=""
+        aria-hidden="true"
+        className="absolute inset-0 h-full w-full scale-110 object-cover object-bottom blur-2xl"
+      />
+      <img
+        src={p.image}
+        alt={`${p.name} — ${p.industry} website`}
+        className="relative block h-auto w-full [mask-image:linear-gradient(to_bottom,#000_80%,transparent)]"
+        loading="lazy"
+      />
+      <div className="absolute inset-x-0 bottom-0 flex items-center justify-between gap-3 px-5 pb-5">
+        <span
+          className="rounded-full px-2 py-0.5 text-[0.55rem] font-medium uppercase tracking-wide text-black"
+          style={{ background: p.accent }}
+        >
+          {p.industry}
+        </span>
+        {p.to && (
+          <span className="rounded-full bg-white/90 px-3 py-1 text-[0.65rem] font-medium text-black shadow-sm">
+            Open booking demo →
+          </span>
+        )}
+      </div>
+    </>
+  ) : (
     <>
       <img src={p.image} alt={`${p.name} — ${p.industry} website`} className="h-full w-full object-cover" loading="lazy" />
       <div className="absolute inset-0 bg-gradient-to-t from-ink via-ink/20 to-transparent" />
@@ -209,7 +243,7 @@ export default function Portfolio() {
 
               <Reveal delay={0.2}>
                 <div className="mt-2">
-                  <MagneticButton href="#contact" variant="ghost" onClick={() => scrollToId("#contact")}>
+                  <MagneticButton href="#contact" variant="accent" onClick={() => scrollToId("#contact")}>
                     Build mine →
                   </MagneticButton>
                 </div>

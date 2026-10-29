@@ -3,13 +3,15 @@ import { cn } from "../../utils/cn";
 interface LogoProps {
   className?: string;
   onClick?: () => void;
+  /** White wordmark, for dark backgrounds. */
+  dark?: boolean;
 }
 
 /**
  * EmiNara AI brand mark — a geometric "E" node built from a vertical stem,
  * three strokes and a signal node. Suggests structure + intelligence.
  */
-export default function Logo({ className, onClick }: LogoProps) {
+export default function Logo({ className, onClick, dark }: LogoProps) {
   return (
     <a
       href="#top"
@@ -34,7 +36,7 @@ export default function Logo({ className, onClick }: LogoProps) {
         </svg>
         <span className="pointer-events-none absolute -right-0.5 -top-0.5 h-1.5 w-1.5 rounded-full bg-accent" />
       </span>
-      <span className="text-[1.05rem] font-semibold tracking-tight text-cream">
+      <span className={cn("text-[1.05rem] font-semibold tracking-tight transition-colors duration-500", dark ? "text-white" : "text-cream")}>
         EmiNara<span className="text-accent"> AI</span>
       </span>
     </a>

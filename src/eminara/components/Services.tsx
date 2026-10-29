@@ -1,8 +1,22 @@
-import { useEffect, useRef, useState } from "react";
+import { useEffect, useRef, useState, type PointerEvent, type ReactNode } from "react";
 import { motion, AnimatePresence } from "framer-motion";
+import {
+  CalendarCheck,
+  Check,
+  Cpu,
+  Heart,
+  MessageCircle,
+  PhoneMissed,
+  Send,
+  Smartphone,
+  Sparkles,
+  Voicemail,
+  Zap,
+} from "lucide-react";
 import SectionHeading from "./ui/SectionHeading";
 import Reveal from "./ui/Reveal";
 import { cn } from "../utils/cn";
+import { scrollToId } from "../lib/smooth-scroll";
 
 interface Service {
   id: string;
@@ -19,8 +33,8 @@ const SERVICES: Service[] = [
     num: "01",
     name: "AI Automation",
     tag: "Systems that run themselves",
-    desc: "Turn repetitive work into automated systems.",
-    points: ["Process automation", "Tool & system connections", "Lead management", "CRM workflows", "Follow-ups"],
+    desc: "AI systems that do the work of entire departments, around the clock.",
+    points: ["AI agent teams", "Back-office operations", "Document processing", "Data & reporting", "Ops at scale"],
   },
   {
     id: "voice",
@@ -56,65 +70,198 @@ const SERVICES: Service[] = [
   },
 ];
 
+// Departments around one AI core. Positions are in a 1000 × 700 box; the map
+// keeps that aspect so the SVG links and the HTML cards line up.
+const UNITS = [
+  { name: "Sales", agents: 180, tasks: "41k", x: 500, y: 85 },
+  { name: "Support", agents: 260, tasks: "63k", x: 155, y: 255 },
+  { name: "Finance", agents: 150, tasks: "38k", x: 845, y: 255 },
+  { name: "Operations", agents: 290, tasks: "52k", x: 240, y: 600 },
+  { name: "HR & admin", agents: 120, tasks: "18k", x: 760, y: 600 },
+];
+
 function VisualAutomation() {
   return (
-    <div className="flex h-full flex-col justify-center gap-3 p-6">
-      {[
-        { t: "Trigger", s: "New inquiry received", on: true },
-        { t: "AI triage", s: "Intent detected & routed", on: true },
-        { t: "Action", s: "CRM + calendar updated", on: true },
-      ].map((n, i) => (
-        <motion.div
-          key={n.t}
-          initial={{ opacity: 0, x: 20 }}
-          animate={{ opacity: 1, x: 0 }}
-          transition={{ delay: 0.1 * i, duration: 0.5 }}
-          className="relative rounded-xl border border-line bg-panel p-4"
-        >
-          <div className="flex items-center gap-3">
-            <span className="flex h-8 w-8 items-center justify-center rounded-lg bg-accent-soft text-accent">
-              {["⚡", "◉", "▣"][i]}
-            </span>
-            <div>
-              <p className="text-sm font-medium text-cream">{n.t}</p>
-              <p className="text-xs text-muted">{n.s}</p>
-            </div>
-            {n.on && <span className="ml-auto flex items-center gap-1.5 text-[0.65rem] text-accent"><span className="h-1.5 w-1.5 rounded-full bg-accent" />auto</span>}
+    <div className="flex h-full flex-col p-6">
+      <div className="flex items-center justify-between">
+        <span className="inline-flex items-center gap-2 text-xs font-medium text-cream">
+          <span className="h-1.5 w-1.5 animate-pulse rounded-full bg-[#22c55e]" />
+          Company-wide automation
+        </span>
+        <span className="rounded-full border border-line bg-panel px-2.5 py-0.5 text-[0.65rem] text-muted">212k tasks a day</span>
+      </div>
+
+      <div className="relative my-auto aspect-[10/7] w-full">
+        <svg viewBox="0 0 1000 700" className="absolute inset-0 h-full w-full" aria-hidden="true">
+          {UNITS.map((u, i) => {
+            const d = `M 500 360 L ${u.x} ${u.y}`;
+            return (
+              <g key={u.name}>
+                <path d={d} stroke="var(--color-line)" strokeWidth="3" strokeDasharray="2 8" strokeLinecap="round" />
+                {[0, 0.7].map((b) => (
+                  <circle key={b} r="7" fill="var(--color-accent)">
+                    <animateMotion dur="1.4s" begin={`${b + i * 0.15}s`} repeatCount="indefinite" path={d} />
+                  </circle>
+                ))}
+              </g>
+            );
+          })}
+        </svg>
+
+        <div className="absolute left-1/2 top-[51.4%] flex -translate-x-1/2 -translate-y-1/2 flex-col items-center">
+          <span className="absolute h-20 w-20 animate-ping rounded-full bg-accent/10 sm:h-28 sm:w-28" />
+          <span className="relative flex h-[4.5rem] w-[4.5rem] flex-col items-center justify-center rounded-full bg-accent text-white shadow-lg sm:h-24 sm:w-24">
+            <Cpu className="h-5 w-5 sm:h-6 sm:w-6" />
+            <span className="mt-1 text-[0.6rem] font-medium sm:text-[0.65rem]">Emi core</span>
+            <span className="text-[0.5rem] opacity-80 sm:text-[0.55rem]">1,000 agents</span>
+          </span>
+        </div>
+
+        {UNITS.map((u) => (
+          <div
+            key={u.name}
+            className="absolute -translate-x-1/2 -translate-y-1/2 rounded-xl border border-line bg-panel px-2 py-1.5 text-center shadow-sm sm:px-3 sm:py-2"
+            style={{ left: `${u.x / 10}%`, top: `${(u.y / 700) * 100}%` }}
+          >
+            <p className="whitespace-nowrap text-[0.7rem] font-medium text-cream sm:text-xs">{u.name}</p>
+            <p className="whitespace-nowrap text-[0.55rem] text-muted sm:text-[0.6rem]">
+              {u.agents} agents · <span className="text-accent">{u.tasks}/day</span>
+            </p>
           </div>
-          {i < 2 && (
-            <div className="absolute -bottom-3 left-8 h-3 w-px bg-line" aria-hidden="true" />
+        ))}
+      </div>
+
+      <p className="text-center text-[0.6rem] text-faint">Illustrative example</p>
+    </div>
+  );
+}
+
+/**
+ * Two versions of the same thing, split by a divider that sweeps across on its
+ * own (web-wipe / web-bar in styles.css) and follows the pointer when there is one.
+ * Children are drawn on top, for labels.
+ */
+function BeforeAfter({
+  before,
+  after,
+  label,
+  className,
+  dark,
+  children,
+}: {
+  before: ReactNode;
+  after: ReactNode;
+  label: string;
+  className?: string;
+  /** A dark divider, for light content. */
+  dark?: boolean;
+  children?: ReactNode;
+}) {
+  const [pos, setPos] = useState<number | null>(null);
+  const area = useRef<HTMLDivElement>(null);
+  const follow = (e: PointerEvent) => {
+    const r = area.current?.getBoundingClientRect();
+    if (r) setPos(Math.min(100, Math.max(0, ((e.clientX - r.left) / r.width) * 100)));
+  };
+
+  return (
+    <div
+      ref={area}
+      className={cn("relative cursor-ew-resize touch-pan-y select-none overflow-hidden", className)}
+      onPointerMove={follow}
+      onPointerLeave={() => setPos(null)}
+      role="img"
+      aria-label={label}
+    >
+      {after}
+      {/* The resting values are the 50/50 split shown when motion is reduced. */}
+      <div
+        className="absolute inset-0"
+        style={
+          pos === null
+            ? { clipPath: "inset(0 50% 0 0)", animation: "web-wipe 7s ease-in-out infinite" }
+            : { clipPath: `inset(0 ${100 - pos}% 0 0)` }
+        }
+      >
+        {before}
+      </div>
+      <div
+        className={cn("absolute inset-y-0 w-0.5 -translate-x-1/2", dark ? "bg-cream/80" : "bg-white shadow")}
+        style={pos === null ? { left: "50%", animation: "web-bar 7s ease-in-out infinite" } : { left: `${pos}%` }}
+      >
+        <span
+          className={cn(
+            "absolute top-1/2 left-1/2 flex h-7 w-7 -translate-x-1/2 -translate-y-1/2 items-center justify-center rounded-full text-[0.6rem] shadow-md",
+            dark ? "bg-cream text-white" : "bg-white text-black",
           )}
-        </motion.div>
-      ))}
+        >
+          ⇆
+        </span>
+      </div>
+      {children}
+    </div>
+  );
+}
+
+// A day of calls, first unanswered and then with Emi picking up.
+const CALLS = [
+  { time: "7:42 pm", who: "New caller", before: "Missed", after: "Booked · Tue 3pm" },
+  { time: "8:05 pm", who: "Sarah M.", before: "Missed", after: "Quote sent" },
+  { time: "9:15 pm", who: "Unknown", before: "Voicemail", after: "Booked · Thu 10am" },
+  { time: "12:30 am", who: "New caller", before: "Missed", after: "Question answered" },
+  { time: "10:02 am", who: "Dave R.", before: "Hung up on hold", after: "Transferred to you" },
+  { time: "1:15 pm", who: "New caller", before: "Missed", after: "Booked · Fri 2pm" },
+];
+
+/** The answered log is mirrored, so its outcomes sit on the side that shows. */
+function CallLog({ answered }: { answered?: boolean }) {
+  return (
+    <div className={cn("absolute inset-0 flex flex-col p-3 sm:p-4", answered ? "bg-panel" : "bg-[#f3eded]")}>
+      <div className={cn("mb-1 flex items-center gap-2 text-[0.6rem] sm:mb-2 sm:text-[0.65rem]", answered && "flex-row-reverse")}>
+        <span className="font-medium text-cream">{answered ? "With Emi answering" : "Your phone, last 24 hours"}</span>
+        <span className={cn("rounded-full px-2 py-0.5 font-medium", answered ? "bg-[#dcfce7] text-[#15803d]" : "bg-[#fee2e2] text-[#b91c1c]")}>
+          {answered ? "6 answered · 3 booked" : "5 missed"}
+        </span>
+      </div>
+      <ul className="flex flex-1 flex-col justify-between">
+        {CALLS.map((c) => (
+          <li
+            key={c.time}
+            className={cn(
+              "flex items-center gap-2 border-b border-line-soft py-1 text-[0.6rem] last:border-0 sm:py-1.5 sm:text-[0.65rem]",
+              answered && "flex-row-reverse text-right",
+            )}
+          >
+            <span
+              className={cn(
+                "flex h-5 w-5 shrink-0 items-center justify-center rounded-full sm:h-6 sm:w-6",
+                answered ? "bg-[#dcfce7] text-[#15803d]" : "bg-[#fee2e2] text-[#dc2626]",
+              )}
+            >
+              {answered ? <Check className="h-3 w-3" /> : c.before === "Voicemail" ? <Voicemail className="h-3 w-3" /> : <PhoneMissed className="h-3 w-3" />}
+            </span>
+            <span className={cn("font-medium", answered ? "text-[#15803d]" : "text-[#b91c1c]")}>{answered ? c.after : c.before}</span>
+            <span className={cn("hidden text-muted sm:inline", answered ? "mr-auto" : "ml-auto")}>
+              {c.who} · {c.time}
+            </span>
+          </li>
+        ))}
+      </ul>
     </div>
   );
 }
 
 function VisualVoice() {
   return (
-    <div className="flex h-full flex-col items-center justify-center gap-6 p-6">
-      <div className="relative flex h-28 w-28 items-center justify-center rounded-full border border-line bg-panel">
-        <span className="absolute inset-0 animate-ping rounded-full bg-accent/10" />
-        <svg className="h-11 w-11 text-accent" viewBox="0 0 24 24" fill="none" aria-hidden="true">
-          <path d="M5 10v4M8 7v10M11 4v16M14 7v10M17 9v6M20 10v4" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" />
-        </svg>
-      </div>
-      <div className="w-full space-y-2">
-        {["Call from: new lead", "Emi: “Hi! Thanks for calling…”", "Qualified · booked 3pm Tue"].map((t, i) => (
-          <motion.p
-            key={i}
-            initial={{ opacity: 0, y: 8 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ delay: 0.2 * i, duration: 0.4 }}
-            className={cn(
-              "rounded-lg px-3 py-2 text-xs",
-              i === 0 ? "bg-panel text-muted" : i === 1 ? "bg-accent-soft text-cream" : "border border-line bg-panel text-accent"
-            )}
-          >
-            {t}
-          </motion.p>
-        ))}
-      </div>
+    <div className="flex h-full flex-col justify-center gap-4 p-6">
+      <BeforeAfter
+        dark
+        className="aspect-square rounded-xl border border-line shadow-sm sm:aspect-[16/11]"
+        label="A call log of missed calls beside the same calls answered by an AI receptionist"
+        before={<CallLog />}
+        after={<CallLog answered />}
+      />
+      <p className="text-center text-xs text-muted">Every call that used to go to voicemail, answered and turned into business.</p>
     </div>
   );
 }
@@ -146,54 +293,195 @@ function VisualChat() {
   );
 }
 
-function VisualWeb() {
+// The same estate agent before and after. A divider sweeps across on its own
+// (web-wipe / web-bar in styles.css); under the pointer it follows the pointer.
+function OldEstateSite() {
   return (
-    <div className="flex h-full flex-col gap-4 p-6">
-      <div className="rounded-xl border border-line bg-panel p-3">
-        <div className="mb-3 flex items-center gap-1.5">
-          <span className="h-2 w-2 rounded-full bg-faint" />
-          <span className="h-2 w-2 rounded-full bg-faint" />
-          <span className="h-2 w-2 rounded-full bg-accent/60" />
-          <span className="ml-3 h-2 flex-1 rounded-full bg-panel-2" />
-        </div>
-        <div className="mb-3 flex items-center justify-between">
-          <span className="h-2.5 w-16 rounded bg-cream/80" />
-          <div className="flex gap-1.5">
-            <span className="h-2 w-8 rounded bg-line" />
-            <span className="h-2 w-8 rounded bg-line" />
-            <span className="h-2 w-6 rounded bg-accent" />
-          </div>
-        </div>
-        <div className="grid grid-cols-2 gap-2">
-          <span className="h-10 rounded-lg bg-gradient-to-br from-accent/25 to-accent-soft" />
-          <span className="h-10 rounded-lg bg-gradient-to-br from-accent/15 to-transparent" />
-        </div>
+    <div className="h-full w-full bg-[#dcdcdc] p-[4%] text-black" style={{ fontFamily: "'Times New Roman', Times, serif" }}>
+      <div className="bg-[#000080] px-2 py-1.5 text-sm font-bold text-[#ffff00]">MERIDIAN ESTATES</div>
+      <p className="mt-1 text-[0.6rem] text-[#0000ee] underline">Home | About Us | Listings | Contact</p>
+      <p className="mt-2 text-[0.7rem] font-bold text-[#cc0000]">*** Welcome to our website!!! ***</p>
+      <div className="mt-2 flex gap-2">
+        <div className="flex h-16 w-20 shrink-0 items-center justify-center border border-black bg-[#bdbdbd] text-[0.5rem]">[image]</div>
+        <table className="border-collapse text-[0.55rem]">
+          <tbody>
+            {["3 bed house - $450,000", "2 bed flat - $310,000", "Land for sale - call"].map((r) => (
+              <tr key={r}>
+                <td className="border border-black px-1">{r}</td>
+                <td className="border border-black px-1 text-[#0000ee] underline">click here</td>
+              </tr>
+            ))}
+          </tbody>
+        </table>
       </div>
-      <div className="rounded-xl border border-line bg-accent p-3 text-center text-sm font-medium text-ink">Conversion-ready · built to perform</div>
+      <p className="mt-2 text-[0.55rem]">Call us Mon-Fri 9-5. Fax available.</p>
+      <p className="mt-1 text-[0.5rem] text-[#555]">Best viewed in Internet Explorer 6 · Visitors: 000417</p>
     </div>
   );
 }
 
-function VisualVideo() {
+const WEB_WINS = [
+  { Icon: CalendarCheck, label: "Book online 24/7", top: "30%" },
+  { Icon: Smartphone, label: "Perfect on phones", top: "46%" },
+  { Icon: Zap, label: "Loads in under 1s", top: "62%" },
+];
+
+function NewEstateSite() {
   return (
-    <div className="flex h-full flex-col items-center justify-center gap-5 p-6">
-      <div className="relative aspect-[4/3] w-full overflow-hidden rounded-xl border border-line bg-gradient-to-br from-panel-2 via-panel to-ink">
-        <div className="absolute inset-0 flex items-center justify-center">
-          <motion.span
-            className="flex h-16 w-16 items-center justify-center rounded-full bg-accent text-ink"
-            animate={{ scale: [1, 1.08, 1] }}
-            transition={{ repeat: Infinity, duration: 2 }}
-          >
-            <svg className="ml-1 h-6 w-6" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M7 4l13 8-13 8z" /></svg>
-          </motion.span>
+    <div className="absolute inset-0 overflow-hidden">
+      <img
+        src="https://images.pexels.com/photos/7031604/pexels-photo-7031604.jpeg?auto=compress&cs=tinysrgb&fit=crop&h=700&w=1000"
+        alt=""
+        className="absolute inset-0 h-full w-full object-cover"
+      />
+      <div className="absolute inset-0 bg-gradient-to-l from-black/80 via-black/40 to-transparent" />
+      {/* Content sits on the right, the side that is showing while the divider rests mid-way. */}
+      <div className="relative flex h-full flex-col p-[5%] text-white">
+        <div className="flex items-center justify-between">
+          <span className="text-[0.7rem] font-semibold tracking-tight">Meridian Estates</span>
+          <span className="flex items-center gap-3 text-[0.55rem] text-white/80">
+            <span className="hidden sm:inline">Buy</span>
+            <span className="hidden sm:inline">Sell</span>
+            <span className="hidden sm:inline">Rent</span>
+            <span className="rounded-full bg-accent px-2.5 py-1 font-medium text-white">Book a viewing</span>
+          </span>
         </div>
-        <div className="absolute inset-0 flex items-center justify-between px-4">
-          <span className="h-4 w-1/4 rounded bg-accent/40" />
-          <span className="h-4 w-1/4 rounded bg-accent/40" />
-          <span className="h-4 w-1/4 rounded bg-accent/40" />
+        <div className="mt-auto ml-auto max-w-[48%] text-right">
+          <p className="text-base font-medium leading-[1.05] tracking-[-0.03em] sm:text-2xl">Find your next home.</p>
+          <span className="mt-2 inline-block rounded-full bg-accent px-3 py-1.5 text-[0.55rem] font-medium sm:mt-3 sm:text-[0.6rem]">Book a viewing →</span>
         </div>
       </div>
-      <p className="text-xs text-muted">AI-generated · rendered in hours, not weeks</p>
+      {/* Too crowded at phone width, where the headline needs the room. */}
+      {WEB_WINS.map(({ Icon, label, top }) => (
+        <span
+          key={label}
+          className="absolute right-[5%] hidden items-center gap-1.5 rounded-full bg-white/95 px-2.5 py-1 text-[0.6rem] font-medium text-cream shadow sm:inline-flex"
+          style={{ top }}
+        >
+          <Icon className="h-3 w-3 text-accent" /> {label}
+        </span>
+      ))}
+    </div>
+  );
+}
+
+function VisualWeb() {
+  return (
+    <div className="flex h-full flex-col justify-center gap-4 p-6">
+      <div className="overflow-hidden rounded-xl border border-line bg-panel shadow-sm">
+        <div className="flex items-center gap-1.5 border-b border-line-soft bg-panel-2 px-3 py-2">
+          <span className="h-2 w-2 rounded-full bg-[#ff5f57]" />
+          <span className="h-2 w-2 rounded-full bg-[#febc2e]" />
+          <span className="h-2 w-2 rounded-full bg-[#28c840]" />
+          <span className="ml-2 flex-1 truncate rounded bg-ink px-2 py-0.5 text-[0.55rem] text-muted">🔒 meridianestates.com</span>
+        </div>
+        <BeforeAfter
+          className="aspect-[16/10]"
+          label="An outdated estate agent website beside the modern redesign of the same business"
+          before={<OldEstateSite />}
+          after={<NewEstateSite />}
+        >
+          <span className="absolute top-2 left-2 rounded-full bg-black/70 px-2 py-0.5 text-[0.55rem] font-medium uppercase tracking-wide text-white">Before</span>
+          <span className="absolute top-2 right-2 rounded-full bg-accent px-2 py-0.5 text-[0.55rem] font-medium uppercase tracking-wide text-white">After</span>
+        </BeforeAfter>
+      </div>
+      <p className="text-center text-xs text-muted">Same business. A site that finally looks as good as it performs.</p>
+    </div>
+  );
+}
+
+// Real spots from public/videos, played in turn inside a social feed.
+const REELS = [
+  { slug: "blender-ugc", brand: "blendr.co", caption: "Smoothies in 30 seconds. No mess. 🍓", likes: "12.4k" },
+  { slug: "toothbrush-ugc", brand: "sonicsmile", caption: "The 2-minute upgrade to your morning.", likes: "8.9k" },
+  { slug: "skincare-ugc", brand: "rosehip.lab", caption: "One oil. Glow by Friday.", likes: "21.7k" },
+];
+
+function VisualVideo() {
+  const [i, setI] = useState(0);
+  const [progress, setProgress] = useState(0);
+  const video = useRef<HTMLVideoElement>(null);
+  const reel = REELS[i]!;
+
+  // React leaves `muted` out of server HTML, and autoplay needs it, so set it
+  // here and start playback. Visitors who ask for less motion get a still.
+  useEffect(() => {
+    const v = video.current;
+    if (!v) return;
+    v.muted = true;
+    if (!window.matchMedia("(prefers-reduced-motion: reduce)").matches) v.play().catch(() => {});
+  }, [i]);
+
+  return (
+    <div className="flex h-full items-center justify-center gap-6 p-6">
+      <div className="hidden flex-col gap-2.5 sm:flex">
+        {["Shot, voiced & edited with AI", "Ready for Reels, TikTok & Shorts", "Delivered in days, not weeks"].map((t) => (
+          <span key={t} className="inline-flex items-center gap-2 rounded-full border border-line bg-panel px-3 py-1.5 text-[0.65rem] text-cream-dim shadow-sm">
+            <Sparkles className="h-3 w-3 text-accent" /> {t}
+          </span>
+        ))}
+        <div className="mt-2 flex gap-1.5 pl-1">
+          {REELS.map((r, k) => (
+            <button
+              key={r.slug}
+              type="button"
+              onClick={() => setI(k)}
+              aria-label={`Play the ${r.brand} ad`}
+              className={cn("h-1.5 rounded-full transition-all", k === i ? "w-6 bg-accent" : "w-1.5 bg-line hover:bg-faint")}
+            />
+          ))}
+        </div>
+        <button
+          type="button"
+          onClick={() => scrollToId("#video-ads")}
+          className="mt-1 self-start pl-1 text-[0.65rem] font-medium text-cream underline-offset-4 hover:text-accent hover:underline"
+        >
+          Watch all our spots ↓
+        </button>
+      </div>
+
+      <div className="w-[210px] shrink-0 rounded-[2rem] border-[6px] border-cream bg-cream shadow-2xl">
+        <div className="relative aspect-[9/16] overflow-hidden rounded-[1.5rem] bg-black">
+          <video
+            key={reel.slug}
+            ref={video}
+            src={`/videos/${reel.slug}.mp4`}
+            muted
+            playsInline
+            preload="auto"
+            aria-label={`${reel.brand} video ad`}
+            className="absolute inset-0 h-full w-full object-cover"
+            onTimeUpdate={(e) => setProgress(e.currentTarget.currentTime / (e.currentTarget.duration || 1))}
+            onEnded={() => setI((k) => (k + 1) % REELS.length)}
+          />
+          <div className="absolute inset-x-2 top-2 h-0.5 overflow-hidden rounded-full bg-white/30">
+            <div className="h-full bg-white transition-[width] duration-200 ease-linear" style={{ width: `${progress * 100}%` }} />
+          </div>
+          <div className="pointer-events-none absolute inset-0 bg-gradient-to-t from-black/70 via-transparent to-black/20" />
+          <div className="absolute top-5 left-3 flex items-center gap-1.5 text-white">
+            <span className="h-6 w-6 rounded-full bg-gradient-to-br from-accent to-[#ff9a3c]" />
+            <span className="text-[0.6rem] font-semibold leading-tight">
+              {reel.brand}
+              <span className="block text-[0.5rem] font-normal text-white/70">Sponsored</span>
+            </span>
+          </div>
+          <div className="absolute right-2 bottom-20 flex flex-col items-center gap-3 text-white" aria-hidden="true">
+            <span className="flex flex-col items-center text-[0.5rem]">
+              <Heart className="h-5 w-5 fill-white" />
+              {reel.likes}
+            </span>
+            <span className="flex flex-col items-center text-[0.5rem]">
+              <MessageCircle className="h-5 w-5" />
+              318
+            </span>
+            <Send className="h-5 w-5" />
+          </div>
+          <div className="absolute inset-x-3 bottom-3 text-white">
+            <p className="pr-8 text-[0.6rem] leading-snug">{reel.caption}</p>
+            <span className="mt-2 block rounded-md bg-accent py-1.5 text-center text-[0.6rem] font-semibold">Shop now</span>
+          </div>
+        </div>
+      </div>
     </div>
   );
 }
@@ -293,7 +581,13 @@ export default function Services() {
 
           {/* Visual panel */}
           <div className="lg:col-span-6">
-            <div className="sticky top-24 min-h-[420px] overflow-hidden rounded-3xl border border-line bg-panel/60 lg:h-full">
+            {/* Hold the auto-advance while the pointer is here, so a panel being
+                played with (the website slider) doesn't switch away. */}
+            <div
+              className="sticky top-24 min-h-[420px] overflow-hidden rounded-3xl border border-line bg-panel/60 lg:h-full"
+              onMouseEnter={() => timer.current && clearTimeout(timer.current)}
+              onMouseLeave={() => select(active)}
+            >
               <AnimatePresence mode="wait">
                 <motion.div
                   key={active}
@@ -301,7 +595,7 @@ export default function Services() {
                   animate={{ opacity: 1, scale: 1 }}
                   exit={{ opacity: 0, scale: 0.97 }}
                   transition={{ duration: 0.4, ease: [0.16, 1, 0.3, 1] }}
-                  className="h-full min-h-[420px]"
+                  className="flex h-full min-h-[420px] flex-col [&>*]:flex-1"
                 >
                   {ActiveVisual ? <ActiveVisual /> : null}
                 </motion.div>

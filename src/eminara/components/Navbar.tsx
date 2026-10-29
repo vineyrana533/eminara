@@ -16,16 +16,28 @@ const LINKS = [
 
 export default function Navbar() {
   const [scrolled, setScrolled] = useState(false);
+  const [overDark, setOverDark] = useState(false);
   const [open, setOpen] = useState(false);
   const reduce = useReducedMotion();
   const { scrollYProgress } = useScroll();
   const progress = useSpring(scrollYProgress, { stiffness: 120, damping: 30 });
+  // The open mobile menu is light, so the bar goes back to its light style over it.
+  const dark = overDark && !open;
 
   useEffect(() => {
-    const onScroll = () => setScrolled(window.scrollY > 32);
+    const onScroll = () => {
+      setScrolled(window.scrollY > 32);
+      // Dark sections opt in with data-nav-dark; 48px is about the bar's middle.
+      const section = document.querySelector("[data-nav-dark]")?.getBoundingClientRect();
+      setOverDark(!!section && section.top < 48 && section.bottom > 48);
+    };
     onScroll();
     window.addEventListener("scroll", onScroll, { passive: true });
-    return () => window.removeEventListener("scroll", onScroll);
+    window.addEventListener("resize", onScroll);
+    return () => {
+      window.removeEventListener("scroll", onScroll);
+      window.removeEventListener("resize", onScroll);
+    };
   }, []);
 
   const go = (href: string) => {
@@ -54,10 +66,15 @@ export default function Navbar() {
         <div
           className={cn(
             "mx-auto flex w-full max-w-6xl items-center justify-between rounded-full px-3 pl-5 transition-all duration-500",
-            scrolled ? "glass-pill h-14" : "h-16 bg-white/45 backdrop-blur-md"
+            scrolled ? "h-14" : "h-16",
+            dark
+              ? "border border-white/10 bg-[#16161a]/70 shadow-[0_12px_40px_-18px_rgba(0,0,0,0.8)] backdrop-blur-xl"
+              : scrolled
+                ? "glass-pill"
+                : "bg-white/45 backdrop-blur-md"
           )}
         >
-          <Logo onClick={() => go("#top")} />
+          <Logo dark={dark} onClick={() => go("#top")} />
 
           {/* Desktop nav */}
           <nav className="hidden items-center gap-8 lg:flex" aria-label="Primary">
@@ -69,7 +86,10 @@ export default function Navbar() {
                   e.preventDefault();
                   go(l.href);
                 }}
-                className="group relative text-sm text-cream-dim transition-colors hover:text-cream"
+                className={cn(
+                  "group relative text-sm transition-colors",
+                  dark ? "text-white/70 hover:text-white" : "text-cream-dim hover:text-cream"
+                )}
               >
                 {l.label}
                 <span className="absolute -bottom-1 left-0 h-px w-0 bg-accent transition-all duration-300 group-hover:w-full" />
@@ -79,7 +99,12 @@ export default function Navbar() {
 
           <div className="flex items-center gap-3">
             <div className="hidden sm:block">
-              <MagneticButton href="https://calendly.com/akshitpundeer/30min" target="_blank" rel="noopener noreferrer">
+              <MagneticButton
+                href="https://calendly.com/akshitpundeer/30min"
+                target="_blank"
+                rel="noopener noreferrer"
+                className={dark ? "bg-white text-[#0b0b0d] hover:bg-accent hover:text-white" : ""}
+              >
                 Book a Call
                 <svg
                   className="h-3.5 w-3.5 transition-transform duration-300 group-hover:translate-x-0.5"
@@ -103,12 +128,16 @@ export default function Navbar() {
               onClick={() => setOpen((v) => !v)}
               aria-label={open ? "Close menu" : "Open menu"}
               aria-expanded={open}
-              className="relative flex h-10 w-10 items-center justify-center rounded-full border border-line bg-panel lg:hidden"
+              className={cn(
+                "relative flex h-10 w-10 items-center justify-center rounded-full border transition-colors duration-500 lg:hidden",
+                dark ? "border-white/15 bg-white/10" : "border-line bg-panel"
+              )}
             >
               <span className="relative block h-3.5 w-4">
                 <span
                   className={cn(
-                    "absolute left-0 block h-px w-full bg-cream transition-all duration-300",
+                    "absolute left-0 block h-px w-full transition-all duration-300",
+                    dark ? "bg-white" : "bg-cream",
                     open ? "top-1/2 rotate-45" : "top-0"
                   )}
                 />
@@ -120,7 +149,8 @@ export default function Navbar() {
                 />
                 <span
                   className={cn(
-                    "absolute left-0 block h-px w-full bg-cream transition-all duration-300",
+                    "absolute left-0 block h-px w-full transition-all duration-300",
+                    dark ? "bg-white" : "bg-cream",
                     open ? "top-1/2 -rotate-45" : "bottom-0"
                   )}
                 />
