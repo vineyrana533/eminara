@@ -2,12 +2,15 @@ import { useEffect, useState } from "react";
 import { Play } from "lucide-react";
 import Reveal from "./ui/Reveal";
 import MagneticButton from "./ui/MagneticButton";
-import { ThreeDCarousel, type CarouselItem } from "@/components/ui/3d-carousel";
+import { MoltenRingCarousel, type MoltenRingItem } from "@/components/ui/molten-ring-carousel";
 import { Dialog, DialogContent, DialogDescription, DialogTitle } from "@/components/ui/dialog";
+import { useIsMobile } from "@/hooks/use-mobile";
 import { cn } from "@/lib/utils";
 import { scrollToId } from "../lib/smooth-scroll";
 
-type Ad = CarouselItem & {
+type Ad = {
+  src: string;
+  alt: string;
   title: string;
   tag: string;
   dur: string;
@@ -59,12 +62,18 @@ const ADS: Ad[] = [
   }),
 ];
 
-const RING = [...ADS, ...ADS];
+const RING: MoltenRingItem[] = ADS.map((a) => ({
+  image: a.src,
+  title: a.title,
+  meta: `${a.tag} · ${a.dur}`,
+}));
 
 export default function VideoAds() {
   const [active, setActive] = useState<number | null>(null);
   const current = active === null ? null : ADS[active];
   const open = current !== null;
+  // Phones get bigger cards on a flatter arc, with room for one at a time.
+  const phone = useIsMobile();
 
   // Lenis drives page scrolling from its own wheel handler, so hold it while
   // the player is up or the page would scroll behind the dialog.
@@ -98,31 +107,34 @@ export default function VideoAds() {
         <Reveal delay={0.05}>
           <p className="mt-6 max-w-2xl text-base leading-relaxed text-cream-dim">
             AI-powered creative that lets you test ideas fast — product ads, UGC, social and brand
-            spots, all produced in days instead of weeks. Drag to spin the reel, tap any spot to
-            watch it.
+            spots, all produced in days instead of weeks. Drag or swipe the reel to browse, and tap
+            the front spot to watch it.
           </p>
         </Reveal>
       </div>
 
-      {/* A 3D ring of the real spots, each one twice so the ring is full. Click plays. */}
+      {/* The real spots on a liquid ring. The page keeps the wheel and vertical
+          swipes; dragging or swiping sideways turns it, and the front spot plays. */}
       <Reveal delay={0.1}>
-        <ThreeDCarousel
+        <MoltenRingCarousel
           items={RING}
-          onSelect={(i) => setActive(i % ADS.length)}
-          renderFace={(a) => (
-            <div className="flex flex-col items-center gap-2.5">
-              <span className="flex h-11 w-11 items-center justify-center rounded-full bg-white/90 text-cream shadow-lg backdrop-blur transition-transform duration-300 group-hover:scale-110 sm:h-14 sm:w-14">
-                <Play className="ml-0.5 h-4 w-4 fill-current sm:h-5 sm:w-5" />
-              </span>
-              <span className="rounded-full bg-black/55 px-2.5 py-1 text-[0.55rem] font-medium uppercase tracking-[0.12em] text-white backdrop-blur sm:text-[0.6rem]">
-                {a.tag} · {a.dur}
-              </span>
-            </div>
+          aria-label="AI video ads"
+          scrollTurns={false}
+          // Held while the player is open, so the reel waits where the visitor left it.
+          autoplay={open ? 0 : 3800}
+          cardRatio={16 / 9}
+          cardSize={phone ? 0.74 : 0.3}
+          arc={phone ? 1.6 : 1}
+          onSelect={setActive}
+          renderCentre={() => (
+            <span className="flex h-12 w-12 items-center justify-center rounded-full bg-white/90 text-cream shadow-lg backdrop-blur sm:h-14 sm:w-14">
+              <Play className="ml-0.5 h-4 w-4 fill-current sm:h-5 sm:w-5" aria-hidden="true" />
+            </span>
           )}
-          className="mt-12 h-[300px] sm:h-[460px]"
+          className="mt-10 h-[500px] bg-transparent text-cream [--color-muted-foreground:#6e6e6a] sm:h-[600px] lg:h-[680px]"
         />
 
-        {/* The reel is decorative to assistive tech, so every spot is also a real button here. */}
+        {/* Every spot is also a plain button here, for anyone who would rather not drag. */}
         <ul className="no-scrollbar mt-6 flex gap-2 overflow-x-auto px-6 sm:flex-wrap sm:justify-center sm:overflow-visible">
           {ADS.map((a, i) => (
             <li key={a.video} className="shrink-0">
