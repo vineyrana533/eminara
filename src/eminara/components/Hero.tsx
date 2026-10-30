@@ -1,7 +1,7 @@
 import { useEffect, useRef, useState } from "react";
 import { motion, useReducedMotion } from "framer-motion";
 import MagneticButton from "./ui/MagneticButton";
-import HeroCore, { type MobileCore } from "./HeroCore";
+import HeroCore, { type MobileCore, type Tone } from "./HeroCore";
 import { scrollToId } from "../lib/smooth-scroll";
 import { cn } from "../utils/cn";
 
@@ -57,6 +57,41 @@ function Words({ text, className }: { text: string; className?: string }) {
   );
 }
 
+// Classes per tone. Dark is the original look; light matches the soft grey
+// of the sections below it.
+const TONES = {
+  dark: {
+    section: "bg-[#0b0b0d] text-white",
+    stage: "bg-gradient-to-b from-[#0b0b0d]/65 via-[#0b0b0d]/40 via-55% to-transparent to-80%",
+    dim: "bg-[#0b0b0d]/30",
+    shade: "from-[#0b0b0d]/85 via-[#0b0b0d]/45",
+    badge: "border-white/15 bg-white/5 text-white/70",
+    body: "text-white/70",
+    primary: "hover:bg-white hover:text-[#0b0b0d]",
+    ghost: "border-white/20 bg-transparent text-white/85 hover:border-white/40 hover:bg-white/10",
+    note: "text-white/50",
+    count: "text-white",
+    faint: "text-white/30",
+    ticker: "border-white/10 bg-[#0b0b0d]/60",
+    industry: "text-white/55",
+  },
+  light: {
+    section: "bg-ink text-cream",
+    stage: "bg-gradient-to-b from-ink/80 via-ink/50 via-55% to-transparent to-80%",
+    dim: "bg-ink/40",
+    shade: "from-ink/90 via-ink/55",
+    badge: "border-line bg-panel/70 text-cream-dim",
+    body: "text-cream-dim",
+    primary: "hover:bg-cream hover:text-white",
+    ghost: "border-cream/15 bg-panel/60 text-cream hover:border-cream/30 hover:bg-panel",
+    note: "text-muted",
+    count: "text-cream",
+    faint: "text-faint",
+    ticker: "border-line bg-ink/70",
+    industry: "text-muted",
+  },
+} satisfies Record<Tone, Record<string, string>>;
+
 // An illustrative running total. Starts from a fixed value so the server and
 // browser render the same number.
 function useTaskCount() {
@@ -68,8 +103,15 @@ function useTaskCount() {
   return n;
 }
 
-export default function Hero({ mobileCore = "below" }: { mobileCore?: MobileCore }) {
+export default function Hero({
+  mobileCore = "below",
+  tone = "dark",
+}: {
+  mobileCore?: MobileCore;
+  tone?: Tone;
+}) {
   const copy = useRef<HTMLDivElement>(null);
+  const c = TONES[tone];
   const tasks = useTaskCount();
   // With the core in the background, the hero is one phone screen tall.
   const background = mobileCore !== "below";
@@ -78,26 +120,30 @@ export default function Hero({ mobileCore = "below" }: { mobileCore?: MobileCore
     // data-nav-dark tells the navbar to switch to its dark style while over this section.
     <section
       id="top"
-      data-nav-dark
+      data-nav-dark={tone === "dark" || undefined}
       className={cn(
-        "relative overflow-hidden bg-[#0b0b0d] text-white lg:h-[100svh] lg:min-h-[760px]",
+        "relative overflow-hidden lg:h-[100svh] lg:min-h-[760px]",
+        c.section,
         background ? "min-h-[100svh]" : "min-h-[1060px]",
       )}
     >
-      <HeroCore copy={copy} mobile={mobileCore} />
+      <HeroCore copy={copy} mobile={mobileCore} tone={tone} />
       {/* On phones the motion runs behind the words, so dim it where they sit. */}
       {background && (
         <div
           className={cn(
             "pointer-events-none absolute inset-0 lg:hidden",
-            mobileCore === "stage"
-              ? "bg-gradient-to-b from-[#0b0b0d]/65 via-[#0b0b0d]/40 via-55% to-transparent to-80%"
-              : "bg-[#0b0b0d]/30",
+            mobileCore === "stage" ? c.stage : c.dim,
           )}
         />
       )}
       {/* A soft shade behind the copy so the motion never fights the words. */}
-      <div className="pointer-events-none absolute inset-y-0 left-0 hidden w-[55%] bg-gradient-to-r from-[#0b0b0d]/85 via-[#0b0b0d]/45 to-transparent lg:block" />
+      <div
+        className={cn(
+          "pointer-events-none absolute inset-y-0 left-0 hidden w-[55%] bg-gradient-to-r to-transparent lg:block",
+          c.shade,
+        )}
+      />
 
       {/* Phones get tighter spacing so the copy leaves room for the motion. */}
       <div
@@ -113,7 +159,8 @@ export default function Hero({ mobileCore = "below" }: { mobileCore?: MobileCore
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.8, ease: [0.16, 1, 0.3, 1] }}
             className={cn(
-              "mb-6 inline-flex items-center gap-2 rounded-full border border-white/15 bg-white/5 px-4 py-1.5 text-xs text-white/70 backdrop-blur",
+              "mb-6 inline-flex items-center gap-2 rounded-full border px-4 py-1.5 text-xs backdrop-blur",
+              c.badge,
               background && "mb-5 sm:mb-6",
             )}
           >
@@ -138,7 +185,8 @@ export default function Hero({ mobileCore = "below" }: { mobileCore?: MobileCore
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.8, delay: 0.5, ease: [0.16, 1, 0.3, 1] }}
             className={cn(
-              "mt-6 max-w-md text-base leading-relaxed text-white/70 sm:text-lg",
+              "mt-6 max-w-md text-base leading-relaxed sm:text-lg",
+              c.body,
               background && "mt-5 text-[0.95rem] leading-relaxed sm:mt-6",
             )}
           >
@@ -157,7 +205,8 @@ export default function Hero({ mobileCore = "below" }: { mobileCore?: MobileCore
               size="lg"
               variant="accent"
               className={cn(
-                "bg-accent text-white shadow-[0_14px_36px_-18px_rgba(255,47,146,0.9)] hover:bg-white hover:text-[#0b0b0d]",
+                "bg-accent text-white shadow-[0_14px_36px_-18px_rgba(255,47,146,0.9)]",
+                c.primary,
                 background && "py-3.5 sm:py-4",
               )}
               onClick={() => scrollToId("#contact")}
@@ -178,7 +227,7 @@ export default function Hero({ mobileCore = "below" }: { mobileCore?: MobileCore
               size="lg"
               variant="ghost"
               className={cn(
-                "border-white/20 bg-transparent text-white/85 hover:border-white/40 hover:bg-white/10",
+                c.ghost,
                 background && "py-3.5 sm:py-4",
               )}
               onClick={() => scrollToId("#work")}
@@ -191,13 +240,13 @@ export default function Hero({ mobileCore = "below" }: { mobileCore?: MobileCore
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
             transition={{ delay: 0.9, duration: 0.9 }}
-            className={cn("mt-10 text-xs text-white/50", background && "mt-6 sm:mt-10")}
+            className={cn("mt-10 text-xs", c.note, background && "mt-6 sm:mt-10")}
           >
-            <span className="text-base font-medium tabular-nums text-white">
+            <span className={cn("text-base font-medium tabular-nums", c.count)}>
               {tasks.toLocaleString("en-US")}
             </span>{" "}
             tasks handled today
-            <span className="ml-2 text-white/30">· illustrative</span>
+            <span className={cn("ml-2", c.faint)}>· illustrative</span>
           </motion.p>
         </div>
       </div>
@@ -207,7 +256,10 @@ export default function Hero({ mobileCore = "below" }: { mobileCore?: MobileCore
         initial={{ opacity: 0 }}
         animate={{ opacity: 1 }}
         transition={{ delay: 0.9, duration: 0.9 }}
-        className="absolute inset-x-0 bottom-0 overflow-hidden border-t border-white/10 bg-[#0b0b0d]/60 py-4 backdrop-blur-sm [mask-image:linear-gradient(90deg,transparent,#000_12%,#000_88%,transparent)]"
+        className={cn(
+          "absolute inset-x-0 bottom-0 overflow-hidden border-t py-4 backdrop-blur-sm [mask-image:linear-gradient(90deg,transparent,#000_12%,#000_88%,transparent)]",
+          c.ticker,
+        )}
       >
         {/* Two copies side by side; the ticker keyframe slides by half, so the loop is seamless. */}
         <div className="flex w-max animate-[ticker_40s_linear_infinite] whitespace-nowrap">
@@ -216,7 +268,10 @@ export default function Hero({ mobileCore = "below" }: { mobileCore?: MobileCore
               {INDUSTRIES.map((x) => (
                 <li
                   key={x}
-                  className="flex items-center gap-8 pr-8 text-xs uppercase tracking-[0.22em] text-white/55"
+                  className={cn(
+                    "flex items-center gap-8 pr-8 text-xs uppercase tracking-[0.22em]",
+                    c.industry,
+                  )}
                 >
                   {x}
                   <span className="text-accent" aria-hidden="true">

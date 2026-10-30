@@ -124,7 +124,7 @@ function Index() {
           Each Layer slides over the one before it as you scroll. */}
       <main ref={main} className="overflow-x-clip">
         <Layer first>
-          <Hero />
+          <Hero tone="light" />
         </Layer>
         <Layer>
           <Ticker />

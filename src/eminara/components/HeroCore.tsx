@@ -11,6 +11,18 @@ import { useEffect, useRef, type RefObject } from "react";
 // The site's accent as an rgb triple, for canvas colours.
 const PINK = "255,47,146";
 
+export type Tone = "dark" | "light";
+
+/**
+ * Canvas colours per tone: what each frame fades towards (the section's
+ * background, so trails melt into it), and the colour and strength of the
+ * incoming particles and words.
+ */
+const TONES = {
+  dark: { fade: "rgba(11,11,13,0.26)", ink: "255,255,255", inkAlpha: 1 },
+  light: { fade: "rgba(236,236,235,0.26)", ink: "11,11,13", inkAlpha: 0.62 },
+} satisfies Record<Tone, { fade: string; ink: string; inkAlpha: number }>;
+
 const INBOX = [
   "call",
   "email",
@@ -157,17 +169,20 @@ const reach = (w: number, h: number, cx: number, cy: number) =>
 export default function HeroCore({
   copy,
   mobile = "below",
+  tone = "dark",
 }: {
   copy: RefObject<HTMLElement | null>;
   mobile?: MobileCore;
+  tone?: Tone;
 }) {
   const swarm = useRef<Swarm | null>(null);
+  const { fade, ink, inkAlpha } = TONES[tone];
 
   const trails = useCanvas((ctx, w, h) => {
     const { cx, cy, out, spread, faint, count } = coreAt(ctx, w, h, copy.current, mobile);
     const rmax = reach(w, h, cx, cy);
     const s = (swarm.current ??= makeSwarm(count, rmax));
-    ctx.fillStyle = "rgba(11,11,13,0.26)";
+    ctx.fillStyle = fade;
     ctx.fillRect(0, 0, w, h);
 
     for (let i = 0; i < s.r.length; i++) {
@@ -179,8 +194,8 @@ export default function HeroCore({
         const na = ang + 2.4 / (r + 70);
         s.r[i] = nr;
         s.a[i] = na;
-        const alpha = Math.min(1, (rmax - nr) / 160) * (0.2 + 0.65 * (1 - nr / rmax)) * faint;
-        ctx.fillStyle = `rgba(255,255,255,${alpha.toFixed(3)})`;
+        const alpha = Math.min(1, (rmax - nr) / 160) * (0.2 + 0.65 * (1 - nr / rmax)) * faint * inkAlpha;
+        ctx.fillStyle = `rgba(${ink},${alpha.toFixed(3)})`;
         ctx.fillRect(cx + Math.cos(na) * nr - 0.8, cy + Math.sin(na) * nr * 0.55 - 0.8, 1.6, 1.6);
         if (nr < 24) {
           // Done: leave as a pink result, streaming out in one direction.
@@ -226,7 +241,7 @@ export default function HeroCore({
         wd.r = rmax * (0.7 + Math.random() * 0.3);
         wd.a = Math.random() * Math.PI * 2;
       }
-      ctx.fillStyle = `rgba(255,255,255,${(Math.min(1, (wd.r - 50) / 80) * 0.75).toFixed(3)})`;
+      ctx.fillStyle = `rgba(${ink},${(Math.min(1, (wd.r - 50) / 80) * 0.75 * inkAlpha).toFixed(3)})`;
       ctx.fillText(wd.w, cx + Math.cos(wd.a) * wd.r, cy + Math.sin(wd.a) * wd.r * 0.55);
     }
 
