@@ -1,4 +1,4 @@
-import { useEffect, useRef, useState } from "react";
+import { useRef } from "react";
 import { motion, useReducedMotion } from "framer-motion";
 import MagneticButton from "./ui/MagneticButton";
 import HeroCore, { type MobileCore, type Tone } from "./HeroCore";
@@ -31,12 +31,14 @@ function Words({ text, className }: { text: string; className?: string }) {
   return (
     <span className={className}>
       {text.split(" ").map((w, i) => (
-        <span key={i} className="inline-block overflow-hidden align-bottom">
+        // The tight line height would clip descenders (the g in "bookings"), so the
+        // mask reaches a little below the line without changing the spacing.
+        <span key={i} className="-mb-[0.14em] inline-block overflow-hidden pb-[0.14em] align-bottom">
           {/* The start state must match the server's HTML, so reduced motion
               only changes the timing: the words appear in place at once. */}
           <motion.span
             className="inline-block"
-            initial={{ y: "110%" }}
+            initial={{ y: "125%" }}
             animate={{ y: 0 }}
             transition={
               reduce
@@ -57,6 +59,22 @@ function Words({ text, className }: { text: string; className?: string }) {
   );
 }
 
+/** The hero's wording; the home page uses the defaults below. */
+export type HeroText = {
+  badge: string;
+  title: string;
+  accent: string;
+  intro: string;
+};
+
+const DEFAULT_TEXT: HeroText = {
+  badge: "AI systems for growing businesses",
+  title: "Win more customers.",
+  accent: "Let AI do the busywork.",
+  intro:
+    "Any repetitive task, in any part of your business. We build custom AI automation that connects your tools, runs around the clock and gets better every month, so your team only does the work that needs a person.",
+};
+
 // Classes per tone. Dark is the original look; light matches the soft grey
 // of the sections below it.
 const TONES = {
@@ -69,9 +87,6 @@ const TONES = {
     body: "text-white/70",
     primary: "hover:bg-white hover:text-[#0b0b0d]",
     ghost: "border-white/20 bg-transparent text-white/85 hover:border-white/40 hover:bg-white/10",
-    note: "text-white/50",
-    count: "text-white",
-    faint: "text-white/30",
     ticker: "border-white/10 bg-[#0b0b0d]/60",
     industry: "text-white/55",
   },
@@ -84,35 +99,23 @@ const TONES = {
     body: "text-cream-dim",
     primary: "hover:bg-cream hover:text-white",
     ghost: "border-cream/15 bg-panel/60 text-cream hover:border-cream/30 hover:bg-panel",
-    note: "text-muted",
-    count: "text-cream",
-    faint: "text-faint",
     ticker: "border-line bg-ink/70",
     industry: "text-muted",
   },
 } satisfies Record<Tone, Record<string, string>>;
 
-// An illustrative running total. Starts from a fixed value so the server and
-// browser render the same number.
-function useTaskCount() {
-  const [n, setN] = useState(2_481_093);
-  useEffect(() => {
-    const t = setInterval(() => setN((v) => v + 30 + (v % 23)), 120);
-    return () => clearInterval(t);
-  }, []);
-  return n;
-}
-
 export default function Hero({
   mobileCore = "below",
   tone = "dark",
+  text,
 }: {
   mobileCore?: MobileCore;
   tone?: Tone;
+  text?: Partial<HeroText>;
 }) {
   const copy = useRef<HTMLDivElement>(null);
   const c = TONES[tone];
-  const tasks = useTaskCount();
+  const t = { ...DEFAULT_TEXT, ...text };
   // With the core in the background, the hero is one phone screen tall.
   const background = mobileCore !== "below";
 
@@ -122,7 +125,7 @@ export default function Hero({
       id="top"
       data-nav-dark={tone === "dark" || undefined}
       className={cn(
-        "relative overflow-hidden lg:h-[100svh] lg:min-h-[760px]",
+        "relative overflow-hidden lg:flex lg:min-h-[max(100svh,760px)] lg:flex-col",
         c.section,
         background ? "min-h-[100svh]" : "min-h-[1060px]",
       )}
@@ -145,11 +148,13 @@ export default function Hero({
         )}
       />
 
-      {/* Phones get tighter spacing so the copy leaves room for the motion. */}
+      {/* Phones get tighter spacing so the copy leaves room for the motion. On
+          laptops the copy keeps clear of the floating navbar, and on short
+          screens the section grows rather than pushing the copy up behind it. */}
       <div
         data-depth="copy"
         className={cn(
-          "container-x relative flex h-full flex-col justify-start pt-32 pb-24 lg:justify-center lg:pt-16",
+          "container-x relative flex h-full flex-col justify-start pt-32 pb-24 lg:flex-1 lg:justify-center lg:py-28",
           background && "pt-28 pb-20 sm:pt-32 sm:pb-24",
         )}
       >
@@ -165,7 +170,7 @@ export default function Hero({
             )}
           >
             <span className="h-1.5 w-1.5 rounded-full bg-accent" aria-hidden="true" />
-            One AI core · 1,000 agents
+            {t.badge}
           </motion.p>
 
           <h1
@@ -175,9 +180,9 @@ export default function Hero({
               background && "text-[2.6rem] leading-[0.95]",
             )}
           >
-            <Words text="Everything your business does." />
+            <Words text={t.title} />
             <br />
-            <Words text="Done by one AI." className="font-serif-italic text-accent" />
+            <Words text={t.accent} className="font-serif-italic text-accent" />
           </h1>
 
           <motion.p
@@ -190,8 +195,7 @@ export default function Hero({
               background && "mt-5 text-[0.95rem] leading-relaxed sm:mt-6",
             )}
           >
-            Calls, emails, invoices, leads and tickets pour in. EmiNara's AI handles every one — the
-            work of a thousand people, around the clock.
+            {t.intro}
           </motion.p>
 
           <motion.div
@@ -236,18 +240,6 @@ export default function Hero({
             </MagneticButton>
           </motion.div>
 
-          <motion.p
-            initial={{ opacity: 0 }}
-            animate={{ opacity: 1 }}
-            transition={{ delay: 0.9, duration: 0.9 }}
-            className={cn("mt-10 text-xs", c.note, background && "mt-6 sm:mt-10")}
-          >
-            <span className={cn("text-base font-medium tabular-nums", c.count)}>
-              {tasks.toLocaleString("en-US")}
-            </span>{" "}
-            tasks handled today
-            <span className={cn("ml-2", c.faint)}>· illustrative</span>
-          </motion.p>
         </div>
       </div>
 
