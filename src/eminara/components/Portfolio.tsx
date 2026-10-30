@@ -22,7 +22,6 @@ interface Project {
   to?: "/faresmatch";
   tagline: string;
   services: string[];
-  desc: string;
 }
 
 const PROJECTS: Project[] = [
@@ -38,7 +37,6 @@ const PROJECTS: Project[] = [
     to: "/faresmatch",
     tagline: "Book your flight on FaresMatch",
     services: ["Flight search engine", "AI fare comparison", "Booking automation"],
-    desc: "A live travel platform where visitors compare airfares, check baggage and refund rules, and book trips — with an AI assistant ready to help at every step.",
   },
   {
     id: "realestate",
@@ -49,7 +47,6 @@ const PROJECTS: Project[] = [
     domain: "meridianestates.com",
     tagline: "Find your next home",
     services: ["Custom website", "AI chatbot", "Voice agent"],
-    desc: "Premium listings, instant tours and an AI assistant that qualifies buyers and books viewings.",
   },
   {
     id: "health",
@@ -60,7 +57,6 @@ const PROJECTS: Project[] = [
     domain: "northgateclinic.health",
     tagline: "Care, on your schedule",
     services: ["Booking system", "WhatsApp", "Automation"],
-    desc: "24/7 appointment booking with automated reminders and a WhatsApp assistant for patients.",
   },
   {
     id: "saas",
@@ -71,7 +67,6 @@ const PROJECTS: Project[] = [
     domain: "flowtrack.io",
     tagline: "Analytics that move you",
     services: ["Web app", "Marketing site", "AI chatbot"],
-    desc: "A conversion-focused marketing site plus a product tour that turns trial users into customers.",
   },
   {
     id: "services",
@@ -82,7 +77,6 @@ const PROJECTS: Project[] = [
     domain: "andersen.co",
     tagline: "Advice you can trust",
     services: ["Booking", "Voice agent", "CRM"],
-    desc: "An elegant site where prospects book consultations and Emi answers every incoming call.",
   },
 ];
 
@@ -240,14 +234,6 @@ export default function Portfolio() {
                   </Reveal>
                 );
               })}
-
-              <Reveal delay={0.2}>
-                <div className="mt-2">
-                  <MagneticButton href="#contact" variant="accent" onClick={() => scrollToId("#contact")}>
-                    Build mine →
-                  </MagneticButton>
-                </div>
-              </Reveal>
             </div>
           </div>
 
@@ -263,25 +249,19 @@ export default function Portfolio() {
                   transition={{ duration: 0.45, ease: [0.16, 1, 0.3, 1] }}
                 >
                   <SiteMockup p={p} />
-                  <div className="mt-4 flex items-start justify-between gap-4 rounded-2xl border border-line bg-panel px-5 py-4">
-                    <p className="text-sm leading-relaxed text-cream-dim">{p.desc}</p>
-                    <span className="shrink-0 rounded-full border border-dashed border-line px-3 py-1 text-[0.6rem] uppercase tracking-wide text-faint">
-                      {p.to ? "Live demo" : "Concept"}
-                    </span>
-                  </div>
-                  {p.to && (
-                    <Link
-                      to={p.to}
-                      className="mt-3 inline-flex items-center gap-2 rounded-full bg-accent px-5 py-2.5 text-sm font-medium text-white transition-opacity hover:opacity-90"
-                    >
-                      Search flights &amp; book →
-                    </Link>
-                  )}
                 </motion.div>
               </AnimatePresence>
             </div>
           </div>
         </div>
+
+        <Reveal delay={0.2}>
+          <div className="mt-12 flex justify-center">
+            <MagneticButton href="#contact" variant="accent" size="lg" onClick={() => scrollToId("#contact")}>
+              Build mine →
+            </MagneticButton>
+          </div>
+        </Reveal>
       </div>
     </section>
   );

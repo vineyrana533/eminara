@@ -11,6 +11,8 @@
 import { Route as rootRouteImport } from './routes/__root'
 import { Route as IndexRouteImport } from './routes/index'
 import { Route as FaresmatchRouteImport } from './routes/faresmatch'
+import { Route as PreviewMobileRouteImport } from './routes/preview-mobile'
+import { Route as PreviewMobileHeroRouteImport } from './routes/preview-mobile-hero'
 import { Route as SitemapDotxmlRouteImport } from './routes/sitemap[.]xml'
 
 const IndexRoute = IndexRouteImport.update({
@@ -23,6 +25,16 @@ const FaresmatchRoute = FaresmatchRouteImport.update({
   path: '/faresmatch',
   getParentRoute: () => rootRouteImport,
 } as any)
+const PreviewMobileRoute = PreviewMobileRouteImport.update({
+  id: '/preview-mobile',
+  path: '/preview-mobile',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const PreviewMobileHeroRoute = PreviewMobileHeroRouteImport.update({
+  id: '/preview-mobile-hero',
+  path: '/preview-mobile-hero',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const SitemapDotxmlRoute = SitemapDotxmlRouteImport.update({
   id: '/sitemap.xml',
   path: '/sitemap.xml',
@@ -32,30 +44,54 @@ const SitemapDotxmlRoute = SitemapDotxmlRouteImport.update({
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
   '/faresmatch': typeof FaresmatchRoute
+  '/preview-mobile': typeof PreviewMobileRoute
+  '/preview-mobile-hero': typeof PreviewMobileHeroRoute
   '/sitemap.xml': typeof SitemapDotxmlRoute
 }
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
   '/faresmatch': typeof FaresmatchRoute
+  '/preview-mobile': typeof PreviewMobileRoute
+  '/preview-mobile-hero': typeof PreviewMobileHeroRoute
   '/sitemap.xml': typeof SitemapDotxmlRoute
 }
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
   '/': typeof IndexRoute
   '/faresmatch': typeof FaresmatchRoute
+  '/preview-mobile': typeof PreviewMobileRoute
+  '/preview-mobile-hero': typeof PreviewMobileHeroRoute
   '/sitemap.xml': typeof SitemapDotxmlRoute
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
-  fullPaths: '/' | '/faresmatch' | '/sitemap.xml'
+  fullPaths:
+    | '/'
+    | '/faresmatch'
+    | '/preview-mobile'
+    | '/preview-mobile-hero'
+    | '/sitemap.xml'
   fileRoutesByTo: FileRoutesByTo
-  to: '/' | '/faresmatch' | '/sitemap.xml'
-  id: '__root__' | '/' | '/faresmatch' | '/sitemap.xml'
+  to:
+    | '/'
+    | '/faresmatch'
+    | '/preview-mobile'
+    | '/preview-mobile-hero'
+    | '/sitemap.xml'
+  id:
+    | '__root__'
+    | '/'
+    | '/faresmatch'
+    | '/preview-mobile'
+    | '/preview-mobile-hero'
+    | '/sitemap.xml'
   fileRoutesById: FileRoutesById
 }
 export interface RootRouteChildren {
   IndexRoute: typeof IndexRoute
   FaresmatchRoute: typeof FaresmatchRoute
+  PreviewMobileRoute: typeof PreviewMobileRoute
+  PreviewMobileHeroRoute: typeof PreviewMobileHeroRoute
   SitemapDotxmlRoute: typeof SitemapDotxmlRoute
 }
 
@@ -75,6 +111,20 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof FaresmatchRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/preview-mobile': {
+      id: '/preview-mobile'
+      path: '/preview-mobile'
+      fullPath: '/preview-mobile'
+      preLoaderRoute: typeof PreviewMobileRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/preview-mobile-hero': {
+      id: '/preview-mobile-hero'
+      path: '/preview-mobile-hero'
+      fullPath: '/preview-mobile-hero'
+      preLoaderRoute: typeof PreviewMobileHeroRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/sitemap.xml': {
       id: '/sitemap.xml'
       path: '/sitemap.xml'
@@ -88,6 +138,8 @@ declare module '@tanstack/react-router' {
 const rootRouteChildren: RootRouteChildren = {
   IndexRoute: IndexRoute,
   FaresmatchRoute: FaresmatchRoute,
+  PreviewMobileRoute: PreviewMobileRoute,
+  PreviewMobileHeroRoute: PreviewMobileHeroRoute,
   SitemapDotxmlRoute: SitemapDotxmlRoute,
 }
 export const routeTree = rootRouteImport

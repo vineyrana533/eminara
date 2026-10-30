@@ -1,6 +1,9 @@
+import { useRef } from "react";
 import { createFileRoute } from "@tanstack/react-router";
 
 import { useLenis } from "../eminara/lib/smooth-scroll";
+import { useLayeredSections } from "../eminara/lib/layered-sections";
+import { Layer } from "../eminara/components/LayeredSections";
 import Cursor from "../eminara/components/Cursor";
 import Navbar from "../eminara/components/Navbar";
 import Hero from "../eminara/components/Hero";
@@ -107,28 +110,51 @@ export const Route = createFileRoute("/")({
 
 
 function Index() {
+  const main = useRef<HTMLElement>(null);
   useLenis();
+  useLayeredSections(main);
 
   return (
     <div className="relative min-h-screen bg-ink text-cream">
       <Cursor />
       <Navbar />
 
-      <main>
-        <Hero />
-        <Ticker />
-        <Services />
-        <AIChatDemo />
-        <VoiceAgentDemo />
-        <AutomationFlow />
-        <Portfolio />
-        <VideoAds />
-        <CaseStudies />
-        <Process />
-        <WhoWeHelp />
-        <WhyEmiNara />
-        <Trust />
-        <FinalCTA />
+      {/* Sections that slide in from the side would otherwise widen the page on
+          phones until they arrive. clip, unlike hidden, keeps sticky panels working.
+          Each Layer slides over the one before it as you scroll. */}
+      <main ref={main} className="overflow-x-clip">
+        <Layer first>
+          <Hero />
+        </Layer>
+        <Layer>
+          <Ticker />
+          <Services />
+        </Layer>
+        <Layer>
+          <AIChatDemo />
+          <VoiceAgentDemo />
+        </Layer>
+        <Layer>
+          <AutomationFlow />
+        </Layer>
+        <Layer>
+          <Portfolio />
+        </Layer>
+        <Layer>
+          <VideoAds />
+        </Layer>
+        <Layer>
+          <CaseStudies />
+          <Process />
+        </Layer>
+        <Layer>
+          <WhoWeHelp />
+          <WhyEmiNara />
+        </Layer>
+        <Layer>
+          <Trust />
+          <FinalCTA />
+        </Layer>
       </main>
 
       <Footer />

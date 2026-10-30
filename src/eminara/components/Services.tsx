@@ -266,28 +266,188 @@ function VisualVoice() {
   );
 }
 
-function VisualChat() {
-  const msgs = ["👋 How can we help today?", "I need a new website", "Great — you've come to the right place.", "Can we book a call?"];
+// One AI answering four inboxes at once. Every card is in the site's own
+// neutrals with Emi's replies in pink; only the avatar carries the app's colour.
+type ChatLine = { from: "them" | "emi" | "done"; text: string };
+
+const INBOXES: { name: string; handle: string; avatar: string; ticks?: boolean; script: ChatLine[] }[] = [
+  {
+    name: "Website chat",
+    handle: "blendr.co",
+    avatar: "bg-cream text-white",
+    script: [
+      { from: "them", text: "Do you deliver on Sundays?" },
+      { from: "emi", text: "Yes — free over $50. Add the blender to your cart?" },
+      { from: "them", text: "Yes please" },
+      { from: "done", text: "Order placed · $64" },
+    ],
+  },
+  {
+    name: "WhatsApp",
+    handle: "Bright Smile Dental",
+    avatar: "bg-[#25D366] text-white",
+    ticks: true,
+    script: [
+      { from: "them", text: "Can I move my cleaning to Friday?" },
+      { from: "emi", text: "Done ✓ Friday at 2pm. See you then!" },
+      { from: "them", text: "Thanks 🙏" },
+      { from: "done", text: "Rescheduled · Fri 2pm" },
+    ],
+  },
+  {
+    name: "Instagram DM",
+    handle: "glow.studio",
+    avatar: "bg-gradient-to-tr from-[#feda75] via-[#d62976] to-[#4f5bd5] text-white",
+    script: [
+      { from: "them", text: "How much is the facial?" },
+      { from: "emi", text: "$65 for 60 min. 4pm is free today — book it?" },
+      { from: "them", text: "Book it!" },
+      { from: "done", text: "Booked · today 4pm" },
+    ],
+  },
+  {
+    name: "Messenger",
+    handle: "Meridian Estates",
+    avatar: "bg-gradient-to-br from-[#00B2FF] to-[#006AFF] text-white",
+    script: [
+      { from: "them", text: "Is the 2-bed on Elm St available?" },
+      { from: "emi", text: "It is! Viewings Tue or Thu — which suits you?" },
+      { from: "them", text: "Thursday" },
+      { from: "done", text: "Viewing booked · Thu 11am" },
+    ],
+  },
+];
+
+// Each inbox runs the same 14-beat loop, started at a different beat so
+// there's always something happening somewhere.
+const CHAT_LOOP = 14;
+const CHAT_BEATS = [0, 1, 3, 5, 6, 8]; // them, typing, emi, them, typing, done
+const CHAT_OFFSETS = [0, 7, 3, 10];
+const chatIn = { animation: "chat-in .35s cubic-bezier(.16,1,.3,1) both" };
+
+function Inbox({ inbox, beat }: { inbox: (typeof INBOXES)[number]; beat: number }) {
+  const [them, emi, reply, done] = inbox.script as [ChatLine, ChatLine, ChatLine, ChatLine];
+  const [b0, b1, b2, b3, b4, b5] = CHAT_BEATS as [number, number, number, number, number, number];
+  const shown: (ChatLine | "typing")[] = [];
+  if (beat >= b0) shown.push(them);
+  if (beat === b1 || beat === b1 + 1) shown.push("typing");
+  if (beat >= b2) shown.push(emi);
+  if (beat >= b3) shown.push(reply);
+  if (beat >= b4 && beat < b5) shown.push("typing");
+  if (beat >= b5) shown.push(done);
+  // The card lights up the moment Emi replies.
+  const flash = beat === b2 || beat === b5;
+
   return (
-    <div className="flex h-full flex-col justify-end gap-3 p-6">
-      {msgs.map((m, i) => {
-        const bot = i % 2 === 0;
-        return (
-          <motion.div
-            key={i}
-            initial={{ opacity: 0, y: 12 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ delay: 0.15 * i, duration: 0.4 }}
-            className={cn("max-w-[80%] rounded-2xl px-4 py-2.5 text-sm", bot ? "self-start bg-panel text-cream-dim" : "self-end bg-accent text-ink")}
-          >
-            {m}
-          </motion.div>
-        );
-      })}
-      <div className="flex items-center gap-1.5 self-start rounded-2xl bg-panel px-4 py-3">
-        {[0, 1, 2].map((d) => (
-          <motion.span key={d} className="h-1.5 w-1.5 rounded-full bg-muted" animate={{ opacity: [0.3, 1, 0.3] }} transition={{ repeat: Infinity, duration: 1, delay: d * 0.2 }} />
+    <div
+      className={cn(
+        "flex flex-col overflow-hidden rounded-2xl border border-line bg-panel shadow-sm transition-[box-shadow,border-color] duration-500",
+        flash && "border-accent shadow-[0_0_0_3px_rgba(255,47,146,0.18),0_10px_30px_-12px_rgba(255,47,146,0.5)]",
+      )}
+    >
+      <div className="flex items-center gap-2 border-b border-line-soft bg-panel px-3 py-2 text-cream">
+        <span className={cn("flex h-6 w-6 shrink-0 items-center justify-center rounded-full text-[0.6rem] font-semibold", inbox.avatar)}>
+          {inbox.handle[0]}
+        </span>
+        <span className="min-w-0 flex-1 leading-tight">
+          <span className="block truncate text-[0.65rem] font-semibold">{inbox.handle}</span>
+          <span className="flex items-center gap-1 text-[0.52rem] text-muted">
+            <MessageCircle className="h-2.5 w-2.5" /> {inbox.name}
+          </span>
+        </span>
+        <span className="hidden items-center gap-1 text-[0.52rem] opacity-70 sm:flex">
+          <span className="h-1.5 w-1.5 rounded-full bg-[#22c55e]" /> Emi
+        </span>
+      </div>
+      <div className="flex h-[12rem] flex-col justify-end gap-1.5 overflow-hidden bg-panel-2 p-2 sm:h-[9.5rem] sm:p-2.5">
+        {shown.map((l, i) =>
+          l === "typing" ? (
+            <span key={`t${i}`} className="flex gap-1 self-end rounded-xl bg-accent px-2.5 py-2 text-white" style={chatIn} aria-hidden="true">
+              {[0, 1, 2].map((d) => (
+                <span key={d} className="h-1 w-1 animate-pulse rounded-full bg-current opacity-70" style={{ animationDelay: `${d * 0.2}s` }} />
+              ))}
+            </span>
+          ) : l.from === "done" ? (
+            <span
+              key={i}
+              className="inline-flex items-center gap-1 self-center rounded-full bg-[#dcfce7] px-2.5 py-1 text-[0.58rem] font-semibold text-[#15803d] shadow-sm"
+              style={chatIn}
+            >
+              <Check className="h-3 w-3" /> {l.text}
+            </span>
+          ) : (
+            <span
+              key={i}
+              className={cn(
+                "max-w-[88%] rounded-xl px-2.5 py-1.5 text-[0.6rem] leading-snug shadow-[0_1px_0_rgba(0,0,0,0.04)]",
+                l.from === "them"
+                  ? "self-start rounded-bl-sm bg-panel text-cream-dim ring-1 ring-line-soft"
+                  : "self-end rounded-br-sm bg-accent text-white",
+              )}
+              style={chatIn}
+            >
+              {l.text}
+              {l.from === "emi" && (
+                <span className="ml-1.5 inline-flex items-center gap-0.5 align-bottom text-[0.5rem] opacity-70">
+                  2s{inbox.ticks && <span>✓✓</span>}
+                </span>
+              )}
+            </span>
+          ),
+        )}
+      </div>
+    </div>
+  );
+}
+
+function VisualChat() {
+  const [tick, setTick] = useState(0);
+  // Visitors who ask for less motion get every conversation finished and still.
+  const [still, setStill] = useState(false);
+
+  useEffect(() => {
+    if (window.matchMedia("(prefers-reduced-motion: reduce)").matches) {
+      setStill(true);
+      return;
+    }
+    const t = setInterval(() => setTick((v) => v + 1), 650);
+    return () => clearInterval(t);
+  }, []);
+
+  return (
+    <div className="flex h-full flex-col justify-center gap-3 p-6">
+      <div className="flex items-center justify-between">
+        <span className="inline-flex items-center gap-2 text-xs font-medium text-cream">
+          <span className="h-1.5 w-1.5 animate-pulse rounded-full bg-[#22c55e]" /> One AI, every inbox
+        </span>
+        <span className="rounded-full bg-accent/15 px-2.5 py-0.5 text-[0.65rem] font-medium tabular-nums text-accent">
+          {(1284 + tick).toLocaleString("en-US")} chats today
+        </span>
+      </div>
+
+      <div className="relative grid grid-cols-2 gap-2.5 sm:gap-4">
+        {INBOXES.map((inbox, i) => (
+          <Inbox key={inbox.name} inbox={inbox} beat={still ? CHAT_BEATS[5]! + 1 : (tick + CHAT_OFFSETS[i]!) % CHAT_LOOP} />
         ))}
+        {/* The one AI behind all four inboxes. */}
+        <span className="pointer-events-none absolute top-1/2 left-1/2 flex -translate-x-1/2 -translate-y-1/2 items-center justify-center">
+          <span className="absolute h-14 w-14 animate-ping rounded-full bg-accent/10 sm:h-16 sm:w-16" />
+          <span className="relative flex h-11 w-11 flex-col items-center justify-center rounded-full border-4 border-ink bg-accent text-[0.55rem] font-semibold text-white shadow-[0_8px_24px_-6px_rgba(255,47,146,0.6)] sm:h-16 sm:w-16 sm:text-[0.6rem]">
+            <Sparkles className="h-3 w-3 sm:h-4 sm:w-4" /> Emi
+          </span>
+        </span>
+      </div>
+
+      <div className="flex flex-wrap items-center justify-between gap-2 text-[0.62rem] text-muted">
+        <span className="flex items-center gap-1.5">
+          Also on
+          {["SMS", "Email", "Google Business", "Telegram"].map((x) => (
+            <span key={x} className="rounded-full border border-line bg-panel px-2 py-0.5 text-cream-dim">
+              {x}
+            </span>
+          ))}
+        </span>
+        <span>Replies in 2 sec · 24/7</span>
       </div>
     </div>
   );

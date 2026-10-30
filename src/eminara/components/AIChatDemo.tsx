@@ -83,7 +83,8 @@ export default function AIChatDemo() {
   return (
     <section id="solutions" className="relative scroll-mt-20 bg-ink-2/40 py-24 sm:py-32">
       <div className="container-x">
-        <div className="grid items-center gap-12 lg:grid-cols-2 lg:gap-16">
+        {/* minmax(0, 1fr) stops the chip row's full width from stretching the column on phones. */}
+        <div className="grid grid-cols-[minmax(0,1fr)] items-center gap-12 lg:grid-cols-2 lg:gap-16">
           <Reveal>
             <div>
               <span className="inline-flex items-center gap-3 text-[0.72rem] font-medium uppercase tracking-[0.28em] text-muted">

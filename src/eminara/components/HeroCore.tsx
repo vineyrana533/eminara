@@ -63,7 +63,7 @@ function makeSwarm(n: number, rmax: number): Swarm {
  * the seconds since start; frames clear (or fade) the canvas themselves.
  * Visitors who ask for less motion get a single frame drawn at `stillAt`.
  */
-function useCanvas(
+export function useCanvas(
   frame: (ctx: CanvasRenderingContext2D, w: number, h: number, t: number) => void,
   stillAt = 0,
 ) {
@@ -108,29 +108,65 @@ function useCanvas(
   return ref;
 }
 
-/** The core sits right of the copy on wide screens and under it on narrow ones. */
-function coreAt(ctx: CanvasRenderingContext2D, w: number, h: number, copy: HTMLElement | null) {
+/**
+ * Where the core sits on phones and small tablets: under the copy, in the
+ * empty band between the copy and the bottom of the first screen, or in the
+ * first screen's top corner. The last two keep the motion on the first screen.
+ */
+export type MobileCore = "below" | "stage" | "corner" | "top";
+
+/** Space the industries ticker takes along the bottom of the hero. */
+const TICKER = 52;
+
+/**
+ * How the core is placed and drawn. It sits right of the copy on wide
+ * screens; on narrow ones `mobile` decides. `out` and `spread` aim the
+ * finished work; `faint` dims the particles that drift behind the copy.
+ */
+function coreAt(ctx: CanvasRenderingContext2D, w: number, h: number, copy: HTMLElement | null, mobile: MobileCore) {
   const wide = w > 900;
+  const base = { wide, out: 0, spread: 1.1, glow: 150, words: true, faint: 1, count: wide ? 1600 : 900 };
+  if (wide) return { ...base, cx: w * 0.66, cy: h * 0.52 };
+
   const copyBottom =
     (copy?.getBoundingClientRect().bottom ?? h * 0.6) - ctx.canvas.getBoundingClientRect().top;
-  return {
-    wide,
-    cx: wide ? w * 0.66 : w * 0.5,
-    cy: wide ? h * 0.52 : Math.min(copyBottom + 170, h - 140),
-  };
+  if (mobile === "below") return { ...base, cx: w * 0.5, cy: Math.min(copyBottom + 170, h - 140) };
+  if (mobile === "top") {
+    // The core gets the space above the copy to itself; the copy sits on a
+    // solid sheet, so nothing moves behind the words.
+    const copyTop = (copy?.getBoundingClientRect().top ?? h * 0.45) - ctx.canvas.getBoundingClientRect().top;
+    return { ...base, cx: w * 0.5, cy: Math.max(150, (76 + copyTop) / 2 + 4), glow: 120, spread: 0.8 };
+  }
+
+  // Phones keep the motion calm behind the words: fewer, fainter particles,
+  // no floating labels, and finished work aimed away from the text.
+  const calm = { ...base, words: false, faint: 0.55, count: 600, glow: 100 };
+  // The first screen, not the whole section, which can run taller than the phone.
+  const screen = Math.min(h, window.innerHeight);
+  if (mobile === "corner") return { ...calm, cx: w * 0.86, cy: Math.max(screen * 0.14, 110), out: -0.7, spread: 0.6 };
+  // Centred in the band, but never pushed under the ticker on short phones.
+  const room = screen - TICKER - copyBottom;
+  const cy = Math.min(copyBottom + Math.max(60, room / 2), screen - TICKER - 30);
+  return { ...calm, cx: w * 0.5, cy, spread: 0.5 };
 }
 
 /** How far a particle can be from the core and still be on screen. */
 const reach = (w: number, h: number, cx: number, cy: number) =>
   Math.hypot(Math.max(cx, w - cx), Math.max(cy, h - cy)) * 1.05;
 
-export default function HeroCore({ copy }: { copy: RefObject<HTMLElement | null> }) {
+export default function HeroCore({
+  copy,
+  mobile = "below",
+}: {
+  copy: RefObject<HTMLElement | null>;
+  mobile?: MobileCore;
+}) {
   const swarm = useRef<Swarm | null>(null);
 
   const trails = useCanvas((ctx, w, h) => {
-    const { wide, cx, cy } = coreAt(ctx, w, h, copy.current);
+    const { cx, cy, out, spread, faint, count } = coreAt(ctx, w, h, copy.current, mobile);
     const rmax = reach(w, h, cx, cy);
-    const s = (swarm.current ??= makeSwarm(wide ? 1600 : 900, rmax));
+    const s = (swarm.current ??= makeSwarm(count, rmax));
     ctx.fillStyle = "rgba(11,11,13,0.26)";
     ctx.fillRect(0, 0, w, h);
 
@@ -143,14 +179,14 @@ export default function HeroCore({ copy }: { copy: RefObject<HTMLElement | null>
         const na = ang + 2.4 / (r + 70);
         s.r[i] = nr;
         s.a[i] = na;
-        const alpha = Math.min(1, (rmax - nr) / 160) * (0.2 + 0.65 * (1 - nr / rmax));
+        const alpha = Math.min(1, (rmax - nr) / 160) * (0.2 + 0.65 * (1 - nr / rmax)) * faint;
         ctx.fillStyle = `rgba(255,255,255,${alpha.toFixed(3)})`;
         ctx.fillRect(cx + Math.cos(na) * nr - 0.8, cy + Math.sin(na) * nr * 0.55 - 0.8, 1.6, 1.6);
         if (nr < 24) {
-          // Done: leave as a pink result, streaming out to the right.
+          // Done: leave as a pink result, streaming out in one direction.
           s.out[i] = 1;
           s.r[i] = 24;
-          s.a[i] = (Math.random() - 0.5) * 1.1;
+          s.a[i] = out + (Math.random() - 0.5) * spread;
           s.s[i] = 4 + Math.random() * 5;
           if (s.ripples.length < 6 && Math.random() < 0.04) s.ripples.push(0);
         }
@@ -178,12 +214,12 @@ export default function HeroCore({ copy }: { copy: RefObject<HTMLElement | null>
     ctx.clearRect(0, 0, w, h);
     const s = swarm.current;
     if (!s) return;
-    const { cx, cy } = coreAt(ctx, w, h, copy.current);
+    const { cx, cy, glow: size, words } = coreAt(ctx, w, h, copy.current, mobile);
     const rmax = reach(w, h, cx, cy);
 
     ctx.font = "500 12px Inter, ui-sans-serif, system-ui, sans-serif";
     ctx.textAlign = "center";
-    for (const wd of s.words) {
+    for (const wd of words ? s.words : []) {
       wd.r -= wd.s * (1 + 90 / (wd.r + 30));
       wd.a += 1.6 / (wd.r + 90);
       if (wd.r < 50) {
@@ -195,13 +231,13 @@ export default function HeroCore({ copy }: { copy: RefObject<HTMLElement | null>
     }
 
     const pulse = 1 + Math.sin(t * 3) * 0.06;
-    const glow = ctx.createRadialGradient(cx, cy, 0, cx, cy, 150 * pulse);
+    const glow = ctx.createRadialGradient(cx, cy, 0, cx, cy, size * pulse);
     glow.addColorStop(0, `rgba(${PINK},0.85)`);
     glow.addColorStop(0.25, `rgba(${PINK},0.28)`);
     glow.addColorStop(1, `rgba(${PINK},0)`);
     ctx.fillStyle = glow;
     ctx.beginPath();
-    ctx.arc(cx, cy, 150 * pulse, 0, Math.PI * 2);
+    ctx.arc(cx, cy, size * pulse, 0, Math.PI * 2);
     ctx.fill();
     ctx.fillStyle = "#fff";
     ctx.beginPath();
@@ -223,7 +259,7 @@ export default function HeroCore({ copy }: { copy: RefObject<HTMLElement | null>
   }, 6);
 
   return (
-    <div className="pointer-events-none absolute inset-0" aria-hidden="true">
+    <div data-depth="core" className="pointer-events-none absolute inset-0" aria-hidden="true">
       <canvas ref={trails} className="absolute inset-0 h-full w-full" />
       <canvas ref={crisp} className="absolute inset-0 h-full w-full" />
     </div>

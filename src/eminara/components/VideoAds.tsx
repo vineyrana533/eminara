@@ -2,12 +2,12 @@ import { useEffect, useState } from "react";
 import { Play } from "lucide-react";
 import Reveal from "./ui/Reveal";
 import MagneticButton from "./ui/MagneticButton";
-import { TiltedGridHero, type TiltedGridImage } from "@/components/ui/tilted-grid-hero";
+import { ThreeDCarousel, type CarouselItem } from "@/components/ui/3d-carousel";
 import { Dialog, DialogContent, DialogDescription, DialogTitle } from "@/components/ui/dialog";
 import { cn } from "@/lib/utils";
 import { scrollToId } from "../lib/smooth-scroll";
 
-type Ad = TiltedGridImage & {
+type Ad = CarouselItem & {
   title: string;
   tag: string;
   dur: string;
@@ -59,6 +59,8 @@ const ADS: Ad[] = [
   }),
 ];
 
+const RING = [...ADS, ...ADS];
+
 export default function VideoAds() {
   const [active, setActive] = useState<number | null>(null);
   const current = active === null ? null : ADS[active];
@@ -74,7 +76,10 @@ export default function VideoAds() {
   }, [open]);
 
   return (
-    <section id="video-ads" className="relative scroll-mt-20 overflow-hidden border-t border-line-soft py-24 sm:py-28">
+    <section
+      id="video-ads"
+      className="relative scroll-mt-20 overflow-hidden border-t border-line-soft py-24 sm:py-28"
+    >
       <div className="container-x">
         <Reveal>
           <div className="flex flex-wrap items-center gap-4 sm:gap-6">
@@ -93,32 +98,28 @@ export default function VideoAds() {
         <Reveal delay={0.05}>
           <p className="mt-6 max-w-2xl text-base leading-relaxed text-cream-dim">
             AI-powered creative that lets you test ideas fast — product ads, UGC, social and brand
-            spots, all produced in days instead of weeks. Tap any frame to watch the spot.
+            spots, all produced in days instead of weeks. Drag to spin the reel, tap any spot to
+            watch it.
           </p>
         </Reveal>
       </div>
 
-      {/* Curved, self-scrolling reel of real spots — full-bleed. Hover pauses it; click plays. */}
+      {/* A 3D ring of the real spots, each one twice so the ring is full. Click plays. */}
       <Reveal delay={0.1}>
-        <TiltedGridHero
-          images={ADS}
-          speed={3.5}
-          tileHeight={62}
-          axis={50}
-          curve={70}
-          fade={10}
-          onTileClick={(_, i) => setActive(i)}
-          renderTile={(img, i) => (
-            <div className="flex flex-col items-center gap-3">
-              <span className="flex h-12 w-12 items-center justify-center rounded-full bg-white/90 text-cream shadow-lg backdrop-blur transition-transform duration-300 group-hover/tile:scale-110 sm:h-16 sm:w-16">
-                <Play className="ml-0.5 h-5 w-5 fill-current sm:h-6 sm:w-6" />
+        <ThreeDCarousel
+          items={RING}
+          onSelect={(i) => setActive(i % ADS.length)}
+          renderFace={(a) => (
+            <div className="flex flex-col items-center gap-2.5">
+              <span className="flex h-11 w-11 items-center justify-center rounded-full bg-white/90 text-cream shadow-lg backdrop-blur transition-transform duration-300 group-hover:scale-110 sm:h-14 sm:w-14">
+                <Play className="ml-0.5 h-4 w-4 fill-current sm:h-5 sm:w-5" />
               </span>
-              <span className="rounded-full bg-black/55 px-3 py-1.5 text-[0.65rem] font-medium uppercase tracking-[0.12em] text-white backdrop-blur">
-                {ADS[i]?.tag ?? img.alt} · {ADS[i]?.dur}
+              <span className="rounded-full bg-black/55 px-2.5 py-1 text-[0.55rem] font-medium uppercase tracking-[0.12em] text-white backdrop-blur sm:text-[0.6rem]">
+                {a.tag} · {a.dur}
               </span>
             </div>
           )}
-          className="mt-12 h-[300px] w-full sm:h-[380px] lg:h-[460px]"
+          className="mt-12 h-[300px] sm:h-[460px]"
         />
 
         {/* The reel is decorative to assistive tech, so every spot is also a real button here. */}

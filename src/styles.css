@@ -277,6 +277,11 @@
   to { transform: translateX(-50%); }
 }
 
+/* Services → AI Chatbots: each new message slides up into its inbox. */
+@keyframes chat-in {
+  from { opacity: 0; transform: translateY(6px); }
+}
+
 /* Services → Custom Websites: the before/after divider sweeping across. */
 @keyframes web-wipe {
   0%, 12% { clip-path: inset(0 18% 0 0); }
